@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.Data;
+using System.Diagnostics;
 
 namespace Tests.Model
 {
@@ -26,20 +27,44 @@ namespace Tests.Model
                 syntaxTrees: new[] { tree }, references: new[] { mscorlib, systemData }, 
                 options:new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe:true, optimizationLevel:OptimizationLevel.Release));
 
-            using (var stream = new MemoryStream())
+            var tempFileName = Path.GetTempFileName();
+            try
             {
-                var result = compilation.Emit(stream);
-                if (!result.Success)
+                using (var stream = new FileStream(tempFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
-                    throw new Exception(string.Join("\r\n", result.Diagnostics.Select(d => d.ToString())));
+                    var result = compilation.Emit(stream);
+                    if (!result.Success)
+                    {
+                        throw new Exception(string.Join("\r\n", result.Diagnostics.Select(d => d.ToString())));
+                    }
                 }
 
-                stream.Seek(0, SeekOrigin.Begin);
-                var assembly = Assembly.Load(stream.GetBuffer());
+                using (var analyzer = new Analyzer(true))
+                {
+                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64);
+                    jitController.StartProcess();
+                    jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
+                    jitController.Process.BeginOutputReadLine();
 
-                var anaylzerResult = InprocessAnalyzer.Analyze(assembly);
-                return (compilation.GetSemanticModel(tree), anaylzerResult.Item1, anaylzerResult.Item2);
+                    analyzer.StartEventTrace(jitController.Process.Id);
+                    jitController.RunJitCompilation();
+                    analyzer.StopEventTrace();
+
+                    jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
+
+                    return (compilation.GetSemanticModel(tree), analyzer.AssemblyCallGraph, analyzer.EventDetails);
+                }
             }
+            finally
+            {
+                if (File.Exists(tempFileName))
+                    File.Delete(tempFileName);
+            }
+        }
+        
+        private static void JitHostOutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Console.WriteLine(e.Data);
         }
 
         public static SemanticModel GetSemanticModel(string source)

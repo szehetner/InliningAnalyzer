@@ -75,7 +75,7 @@ namespace Tests.Model
                 if ((symbol as IMethodSymbol)?.MethodKind == MethodKind.BuiltinOperator)
                     continue;
 
-                if (symbol.Kind == SymbolKind.NamedType && node.FirstAncestorOrSelf<ObjectCreationExpressionSyntax>() == null)
+                if (symbol.Kind == SymbolKind.NamedType && node.FirstAncestorOrSelf<ObjectCreationExpressionSyntax>() == null || node.FirstAncestorOrSelf<TypeArgumentListSyntax>() != null)
                     continue;
 
                 var method = codeModel.GetMethodCall(cache, node.Span);

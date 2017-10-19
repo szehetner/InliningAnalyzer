@@ -25,7 +25,7 @@ namespace Tests.Model.Samples
             get
             {
                 var tmp = reader;
-                if (tmp == null) throw new ObjectDisposedException(GetType().Name);
+                if (tmp == null) throw new ObjectDisposedException("reader");
                 return tmp;
             }
         }
@@ -35,7 +35,7 @@ namespace Tests.Model.Samples
             get
             {
                 var tmp = cmd;
-                if (tmp == null) throw new ObjectDisposedException(GetType().Name);
+                if (tmp == null) throw new ObjectDisposedException("cmd");
                 return tmp;
             }
         }
