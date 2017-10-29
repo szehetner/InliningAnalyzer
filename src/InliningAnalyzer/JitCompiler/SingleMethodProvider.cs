@@ -29,10 +29,15 @@ namespace InliningAnalyzer
 
             string typeName = match.Groups[1].Value;
             string methodName = match.Groups[2].Value;
-            string[] parameters = match.Groups[3].Value.Split(',');
+            string[] parameters = match.Groups[3].Value.Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             
             var type = _assembly.GetType(typeName);
-            var candidates = type.GetMethods(SEARCH_BINDINGS).Where(m => m.Name == methodName).ToArray();
+            MethodBase[] candidates;
+            if (methodName == "ctor")
+                candidates = type.GetConstructors(SEARCH_BINDINGS);
+            else
+                candidates = type.GetMethods(SEARCH_BINDINGS).Where(m => m.Name == methodName).ToArray();
+
             if (candidates.Length == 1)
             {
                 yield return candidates[0];
@@ -43,7 +48,7 @@ namespace InliningAnalyzer
             }
         }
 
-        private MethodInfo SelectOverload(MethodInfo[] candidates, string[] parameters)
+        private MethodBase SelectOverload(MethodBase[] candidates, string[] parameters)
         {
             foreach (var candidate in candidates)
             {

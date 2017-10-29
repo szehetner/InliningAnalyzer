@@ -55,6 +55,15 @@ namespace Test
         public void Method4(int[] arg) {}
         public void Method5(List<string> arg) {}
         public void Method6(Dictionary<System.DateTime, bool> arg) {}
+
+        public TestClass() {}
+        public TestClass(int arg) {}
+        
+        public string Name
+        {
+            get { return null; }
+            set { }
+        }
     }
 }
 ";
@@ -68,6 +77,12 @@ namespace Test
             Assert.AreEqual("Test.TestClass.Method4(System.Int32[])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 11, 0));
             Assert.AreEqual("Test.TestClass.Method5(System.Collections.Generic.List`1[System.String])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 12, 0));
             Assert.AreEqual("Test.TestClass.Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 13, 0));
+
+            Assert.AreEqual("Test.TestClass.ctor()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 15, 0));
+            Assert.AreEqual("Test.TestClass.ctor(System.Int32)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 16, 0));
+
+            Assert.AreEqual("Test.TestClass.get_Name()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 20, 0));
+            Assert.AreEqual("Test.TestClass.set_Name(System.String)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 21, 0));
         }
     }
 }

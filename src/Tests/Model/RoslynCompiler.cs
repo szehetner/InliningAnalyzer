@@ -41,7 +41,7 @@ namespace Tests.Model
 
                 using (var analyzer = new Analyzer(true))
                 {
-                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64);
+                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64, null);
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
                     jitController.Process.BeginOutputReadLine();

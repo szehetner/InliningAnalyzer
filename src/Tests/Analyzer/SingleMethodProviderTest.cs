@@ -27,6 +27,12 @@ namespace Tests
             TestOverload("Tests.MethodProviderTestClass.Method4(Tests.MethodProviderTestClass)");
             TestOverload("Tests.MethodProviderTestClass.Method5(System.Int32[],System.Collections.Generic.List`1[System.String])");
             TestOverload("Tests.MethodProviderTestClass.Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])");
+
+            TestOverload("Tests.MethodProviderTestClass.ctor()");
+            TestOverload("Tests.MethodProviderTestClass.ctor(System.Int32)");
+
+            TestOverload("Tests.MethodProviderTestClass.get_Name()");
+            TestOverload("Tests.MethodProviderTestClass.set_Name(System.String)");
         }
 
         private void TestOverload(string methodSpecifier)
@@ -51,5 +57,14 @@ namespace Tests
         public void Method5(int[] arg1, List<string> arg2) { }
         public void Method6() { }
         public void Method6(Dictionary<DateTime, bool> arg1) { }
+
+        public MethodProviderTestClass() { }
+        public MethodProviderTestClass(int arg) { }
+
+        public string Name
+        {
+            get { return null; }
+            set { }
+        }
     }
 }
