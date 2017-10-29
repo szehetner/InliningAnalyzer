@@ -13,13 +13,15 @@ namespace InliningAnalyzer
     {
         private string _assemblyFile;
         private PlatformTarget _platformTarget;
+        private string _methodName;
 
         public Process Process { get; private set; }
         
-        public JitHostController(string assemblyFile, PlatformTarget platformTarget)
+        public JitHostController(string assemblyFile, PlatformTarget platformTarget, string methodName)
         {
             _assemblyFile = assemblyFile;
             _platformTarget = platformTarget;
+            _methodName = methodName;
         }
 
         private string GetJitHostExePath()
@@ -37,7 +39,7 @@ namespace InliningAnalyzer
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = GetJitHostExePath(),
-                Arguments = "\"" + _assemblyFile + "\"",
+                Arguments = BuildArguments(),
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 RedirectStandardInput = true,
@@ -45,6 +47,14 @@ namespace InliningAnalyzer
                 UseShellExecute = false
             };
             Process = Process.Start(startInfo);
+        }
+
+        private string BuildArguments()
+        {
+            if (_methodName == null)
+                return "\"" + _assemblyFile + "\"";
+
+            return "\"" + _assemblyFile + "\" \"" + _methodName + "\"";
         }
         
         public void RunJitCompilation()

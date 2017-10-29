@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace InliningAnalyzer
+{
+    public class SingleMethodProvider : IMethodProvider
+    {
+        private readonly Assembly _assembly;
+        private readonly string _methodSpecifier;
+
+        private const BindingFlags SEARCH_BINDINGS = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+        public SingleMethodProvider(Assembly assembly, string methodSpecifier)
+        {
+            _assembly = assembly;
+            _methodSpecifier = methodSpecifier;
+        }
+
+        public IEnumerable<MethodBase> GetMethods()
+        {
+            var match = Regex.Match(_methodSpecifier, @"(.+)\.(.+?)\((.*?)\)");
+            if (!match.Success)
+                throw new ArgumentOutOfRangeException("Invalid methodSpecifier");
+
+            string typeName = match.Groups[1].Value;
+            string methodName = match.Groups[2].Value;
+            string[] parameters = match.Groups[3].Value.Split(',');
+            
+            var type = _assembly.GetType(typeName);
+            var candidates = type.GetMethods(SEARCH_BINDINGS).Where(m => m.Name == methodName).ToArray();
+            if (candidates.Length == 1)
+            {
+                yield return candidates[0];
+            }
+            else
+            {
+                yield return SelectOverload(candidates, parameters);
+            }
+        }
+
+        private MethodInfo SelectOverload(MethodInfo[] candidates, string[] parameters)
+        {
+            foreach (var candidate in candidates)
+            {
+                var candidateParameters = candidate.GetParameters();
+                if (ParameterTypesMatch(candidateParameters, parameters))
+                    return candidate;
+            }
+            throw new InvalidOperationException("No matching overload found for Method " + _methodSpecifier);
+        }
+
+        private bool ParameterTypesMatch(ParameterInfo[] candidateParameters, string[] parameters)
+        {
+            if (candidateParameters.Length != parameters.Length)
+                return false;
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (GetTypeName(candidateParameters[i].ParameterType) != parameters[i])
+                    return false;
+            }
+            return true;
+        }
+
+        private string GetTypeName(Type type)
+        {
+            if (!type.IsGenericType)
+                return type.FullName;
+
+            return type.Namespace + "." + type.Name + "[" + string.Join(";", type.GenericTypeArguments.Select(GetTypeName)) + "]";
+        }
+    }
+}

@@ -20,6 +20,7 @@ using VsExtension.Shell;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using EnvDTE;
+using Microsoft.VisualStudio.LanguageServices;
 
 namespace VsExtension
 {
@@ -30,11 +31,13 @@ namespace VsExtension
     {
         public const int StartCommandId = 0x0101;
         public const int ToggleCommandId = 0x0100;
-
+        public const int StartSingleMethodCommandId = 0x0131;
+        
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
         public static readonly Guid CommandSet = new Guid("cbca2c69-1cc0-4b99-aa32-a621c99552e4");
+        public static readonly Guid CommandSetContextMenu = new Guid("B790E7BC-2D80-45AA-BF6C-6807582F1D32");
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -47,6 +50,9 @@ namespace VsExtension
         [Import]
         internal IAnalyzerModel AnalyzerModel;
 
+        [Import]
+        internal VisualStudioWorkspace Workspace;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InliningAnalyzerCommands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -58,12 +64,12 @@ namespace VsExtension
             {
                 throw new ArgumentNullException("package");
             }
-
+            
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             var sp = new ServiceProvider(dte2 as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
             var container = sp.GetService(typeof(Microsoft.VisualStudio.ComponentModelHost.SComponentModel)) as Microsoft.VisualStudio.ComponentModelHost.IComponentModel;
             container.DefaultCompositionService.SatisfyImportsOnce(this);
-
+            
             _package = package;
             _outputLogger = new OutputWindowLogger(package);
             _statusBarLogger = new StatusBarLogger(package);
@@ -81,6 +87,11 @@ namespace VsExtension
                 menuItem.BeforeQueryStatus += new EventHandler(OnBeforeQueryStatusToggle);
                 menuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(menuItem);
+
+
+                OleMenuCommand contextMenuItem = new OleMenuCommand(StartSingleMethodMenuItemCallback, new CommandID(CommandSetContextMenu, StartSingleMethodCommandId));
+                contextMenuItem.Enabled = dte2.Solution.IsOpen;
+                commandService.AddCommand(contextMenuItem);
             }
         }
 
@@ -119,7 +130,7 @@ namespace VsExtension
             {
                 myCommand.Text = "Run Inlining Analyzer on " + dte2.ActiveDocument?.ProjectItem?.ContainingProject?.Name;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 myCommand.Text = "Run Inlining Analyzer on Current Project";
             }
@@ -165,8 +176,40 @@ namespace VsExtension
         {
             AnalyzerModel.IsHighlightingEnabled = !AnalyzerModel.IsHighlightingEnabled;
         }
+        
+        private async void StartSingleMethodMenuItemCallback(object sender, EventArgs e)
+        {
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
+            if (project == null)
+                return;
 
+            var selection = (TextSelection)dte2.ActiveDocument.Selection;
+            var filename = dte2.ActiveDocument.FullName;
+            var documentId = Workspace.CurrentSolution.GetDocumentIdsWithFilePath(filename);
+            if (documentId.IsEmpty)
+                return;
+
+            var document = Workspace.CurrentSolution.GetDocument(documentId[0]);
+            var semanticModel = await document.GetSemanticModelAsync();
+            var syntaxTree = await document.GetSyntaxTreeAsync();
+
+            string methodName = MethodNameResolver.GetMethodName(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
+            if (methodName == null)
+            {
+                ShowError("Could not determine selected Method.");
+                return;
+            }
+
+            RunAnalyzer(methodName);
+        }
+        
         private void StartMenuItemCallback(object sender, EventArgs e)
+        {
+            RunAnalyzer(null);
+        }
+
+        private void RunAnalyzer(string methodName)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
@@ -209,11 +252,15 @@ namespace VsExtension
             _outputLogger.WriteText("Starting Inlining Analyzer...");
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Platform: " + platformTarget);
+            if (methodName == null)
+                _outputLogger.WriteText("Method: All");
+            else
+                _outputLogger.WriteText("Method: " + methodName);
             _outputLogger.WriteText("");
 
             using (var analyzer = new Analyzer())
             {
-                JitHostController jitController = new JitHostController(assemblyFile, platformTarget);
+                JitHostController jitController = new JitHostController(assemblyFile, platformTarget, methodName);
                 jitController.StartProcess();
                 jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
                 jitController.Process.BeginOutputReadLine();

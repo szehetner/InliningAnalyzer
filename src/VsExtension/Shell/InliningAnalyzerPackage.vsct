@@ -35,8 +35,6 @@
       <Menu guid="guiInliningAnalyzerPackageCmdSet" id="SubMenu" priority="0x700" type="Menu">
         <Parent guid="guiInliningAnalyzerPackageCmdSet"
                 id="TopLevelGroup" />
-        <!--<CommandFlag>AlwaysCreate</CommandFlag>-->
-        <!-- <CommandFlag>DontCache</CommandFlag> -->
         <Strings>
           <ButtonText>Inlining Analyzer</ButtonText>
           <CommandName>Inlining Analyzer</CommandName>
@@ -55,6 +53,10 @@
       
       <Group guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" priority="0x0600">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="SubMenu"/>
+      </Group>
+    
+    <Group guid="guiInliningAnalyzerContextMenuCmdSet" id="TopLevelGroupContext" priority="0x0500">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
       </Group>
     </Groups>
 
@@ -88,6 +90,14 @@
           <ButtonText>Hide Inlining Analyzer Coloring</ButtonText>
         </Strings>
       </Button>
+    
+      <Button guid="guiInliningAnalyzerContextMenuCmdSet" id="StartAnalyzerContextId" priority="0x0100" type="Button">
+        <Parent guid="guiInliningAnalyzerContextMenuCmdSet" id="TopLevelGroupContext" />
+        <Icon guid="guidImages" id="bmpRun" />
+        <Strings>
+          <ButtonText>Run Inlining Analyzer on Current Method</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -112,6 +122,11 @@
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="SubMenu" value="0x1021"/>
       <IDSymbol name="TopLevelGroup" value="0x1022"/>
+    </GuidSymbol>
+    
+    <GuidSymbol name="guiInliningAnalyzerContextMenuCmdSet" value="{B790E7BC-2D80-45AA-BF6C-6807582F1D32}">
+      <IDSymbol name="StartAnalyzerContextId" value="0x0131" />
+      <IDSymbol name="TopLevelGroupContext" value="0x1030"/>
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{f0bc6b5b-beea-4a27-a8c4-9175d549e5cb}" >

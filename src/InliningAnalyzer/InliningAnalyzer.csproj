@@ -66,8 +66,12 @@
     <Compile Include="Graph\AssemblyCallGraph.cs" />
     <Compile Include="InliningEvent.cs" />
     <Compile Include="InprocessAnalyzer.cs" />
-    <Compile Include="JitCompiler.cs" />
+    <Compile Include="JitCompiler\IMethodProvider.cs" />
+    <Compile Include="JitCompiler\JitCompiler.cs" />
     <Compile Include="Graph\JitType.cs" />
+    <Compile Include="JitCompiler\JitCompilerFactory.cs" />
+    <Compile Include="JitCompiler\SingleMethodProvider.cs" />
+    <Compile Include="JitCompiler\UnorderedMethodProvider.cs" />
     <Compile Include="JitHostController.cs" />
     <Compile Include="PlatformTarget.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

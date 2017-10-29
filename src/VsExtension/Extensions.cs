@@ -21,12 +21,7 @@ namespace VsExtension
               new ClassificationTag(classificationType)
               );
         }
-
-        public static String GetText(this ITextSnapshot snapshot, TextSpan span)
-        {
-            return snapshot.GetText(new Span(span.Start, span.Length));
-        }
-        
+                
         public static string GetFullNamespace(this ITypeSymbol type)
         {
             if (type == null)
@@ -43,15 +38,21 @@ namespace VsExtension
             return result;
         }
         
-        public static string GetFullTypename(this ITypeSymbol type)
+        public static string GetFullTypename(this ITypeSymbol type, string genericParameterSeparator = ",", bool explicitReferenceTypes = false)
         {
+            var arraySymbol = type as IArrayTypeSymbol;
+            if (arraySymbol != null)
+            {
+                return arraySymbol.ElementType.GetFullTypename(genericParameterSeparator, explicitReferenceTypes) + "[]";
+            }
+
             string typename = type.Name;
             var namedType = type as INamedTypeSymbol;
             if (namedType != null && namedType.IsGenericType)
             {
                 typename += "`" + namedType.TypeArguments.Length + "[";
 
-                typename += string.Join(",", namedType.TypeArguments.Select(GetGenericArgumentName));
+                typename += string.Join(genericParameterSeparator, namedType.TypeArguments.Select(t => GetGenericArgumentName(t, explicitReferenceTypes)));
 
                 typename += "]";
             }
@@ -62,9 +63,9 @@ namespace VsExtension
             return type.GetFullNamespace() + "." + typename;
         }
 
-        private static string GetGenericArgumentName(ITypeSymbol typeArgument)
+        private static string GetGenericArgumentName(ITypeSymbol typeArgument, bool explicitReferenceTypes)
         {
-            if (typeArgument.IsReferenceType)
+            if (!explicitReferenceTypes && typeArgument.IsReferenceType)
                 return "System.__Canon";
 
             return GetFullTypename(typeArgument);
