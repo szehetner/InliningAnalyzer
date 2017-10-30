@@ -16,21 +16,24 @@ namespace VsExtension.Model
             var symbol = GetSymbolByLocation(model, tree, line, column);
             if (symbol == null)
                 return null;
-            
-            var methodSymbol = GetSymbolByLocation(model, tree, line, column) as IMethodSymbol;
-            if (methodSymbol == null)
-                return null;
-            
+
+            var methodSymbol = symbol as IMethodSymbol;
+            var propertySymbol = symbol as IPropertySymbol;
+
             StringBuilder builder = new StringBuilder();
             builder.Append(symbol.ContainingType.GetFullTypename(";", true));
-            builder.Append(".");
+            builder.Append("|");
             if (symbol.Name == ".ctor")
                 builder.Append("ctor");
+            else if (propertySymbol != null && propertySymbol.IsIndexer)
+                builder.Append(propertySymbol.Name.Replace("this[]", "get_Item"));
             else
                 builder.Append(symbol.Name);
 
+            var parameters = methodSymbol != null ? methodSymbol.Parameters : propertySymbol.Parameters;
+
             builder.Append("(");
-            builder.Append(string.Join(",", methodSymbol.Parameters.Select(p => p.Type.GetFullTypename(";", true))));
+            builder.Append(string.Join(",", parameters.Select(p => p.Type.GetFullTypename(";", true))));
             builder.Append(")");
 
             return builder.ToString();
@@ -45,7 +48,8 @@ namespace VsExtension.Model
             var methodNode = nodes.FirstOrDefault(n => n.IsKind(SyntaxKind.MethodDeclaration) 
                                                     || n.IsKind(SyntaxKind.ConstructorDeclaration)
                                                     || n.IsKind(SyntaxKind.GetAccessorDeclaration)
-                                                    || n.IsKind(SyntaxKind.SetAccessorDeclaration));
+                                                    || n.IsKind(SyntaxKind.SetAccessorDeclaration)
+                                                    || n.IsKind(SyntaxKind.IndexerDeclaration));
             if (methodNode == null)
                 return null;
 

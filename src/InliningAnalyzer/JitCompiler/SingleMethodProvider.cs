@@ -23,7 +23,7 @@ namespace InliningAnalyzer
 
         public IEnumerable<MethodBase> GetMethods()
         {
-            var match = Regex.Match(_methodSpecifier, @"(.+)\.(.+?)\((.*?)\)");
+            var match = Regex.Match(_methodSpecifier, @"(.+)\|(.+?)\((.*?)\)");
             if (!match.Success)
                 throw new ArgumentOutOfRangeException("Invalid methodSpecifier");
 

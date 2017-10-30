@@ -13,7 +13,7 @@ namespace Tests
         [TestMethod]
         public void TestSingleMethod()
         {
-            var provider = new SingleMethodProvider(Assembly.GetExecutingAssembly(), "Tests.MethodProviderTestClass.Method1()");
+            var provider = new SingleMethodProvider(Assembly.GetExecutingAssembly(), "Tests.MethodProviderTestClass|Method1()");
             var method = provider.GetMethods().Single();
             Assert.AreEqual("Method1", method.Name);
         }
@@ -21,18 +21,26 @@ namespace Tests
         [TestMethod]
         public void TestOverloads()
         {
-            TestOverload("Tests.MethodProviderTestClass.Method1()");
-            TestOverload("Tests.MethodProviderTestClass.Method2(System.Int32)");
-            TestOverload("Tests.MethodProviderTestClass.Method3(System.Int32,System.String)");
-            TestOverload("Tests.MethodProviderTestClass.Method4(Tests.MethodProviderTestClass)");
-            TestOverload("Tests.MethodProviderTestClass.Method5(System.Int32[],System.Collections.Generic.List`1[System.String])");
-            TestOverload("Tests.MethodProviderTestClass.Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])");
+            TestOverload("Tests.MethodProviderTestClass|Method1()");
+            TestOverload("Tests.MethodProviderTestClass|Method2(System.Int32)");
+            TestOverload("Tests.MethodProviderTestClass|Method3(System.Int32,System.String)");
+            TestOverload("Tests.MethodProviderTestClass|Method4(Tests.MethodProviderTestClass)");
+            TestOverload("Tests.MethodProviderTestClass|Method5(System.Int32[],System.Collections.Generic.List`1[System.String])");
+            TestOverload("Tests.MethodProviderTestClass|Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])");
 
-            TestOverload("Tests.MethodProviderTestClass.ctor()");
-            TestOverload("Tests.MethodProviderTestClass.ctor(System.Int32)");
+            TestOverload("Tests.MethodProviderTestClass|ctor()");
+            TestOverload("Tests.MethodProviderTestClass|ctor(System.Int32)");
 
-            TestOverload("Tests.MethodProviderTestClass.get_Name()");
-            TestOverload("Tests.MethodProviderTestClass.set_Name(System.String)");
+            TestOverload("Tests.MethodProviderTestClass|get_Name()");
+            TestOverload("Tests.MethodProviderTestClass|set_Name(System.String)");
+
+            TestOverload("Tests.MethodProviderTestClass|Dispose()");
+            TestOverload("Tests.MethodProviderTestClass|BaseTest()");
+            TestOverload("Tests.TestClass2|BaseTest()");
+            TestOverload("Tests.TestClass3|System.IDisposable.Dispose()");
+
+            TestOverload("Tests.TestClass3|get_Item(System.String)");
+            TestOverload("Tests.TestClass3|Tests.IIndexer.get_Item(System.Int32)");
         }
 
         private void TestOverload(string methodSpecifier)
@@ -66,5 +74,24 @@ namespace Tests
             get { return null; }
             set { }
         }
+        public void Dispose() { }
+        public virtual void BaseTest() { }
+    }
+
+    public class TestClass2 : MethodProviderTestClass
+    {
+        public override void BaseTest() { }
+    }
+
+    public class TestClass3 : IDisposable, IIndexer
+    {
+        void IDisposable.Dispose() { }
+        string this[string name] => name;
+        int IIndexer.this[int i] => i;
+    }
+
+    public interface IIndexer
+    {
+        int this[int i] { get; }
     }
 }
