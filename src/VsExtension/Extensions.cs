@@ -68,6 +68,9 @@ namespace VsExtension
             if (!explicitReferenceTypes && typeArgument.IsReferenceType)
                 return "System.__Canon";
 
+            if (typeArgument.IsDefinition)
+                return typeArgument.Name;
+
             return GetFullTypename(typeArgument);
         }
     }
