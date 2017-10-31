@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="InliningAnalyzer-a4c401b8-a782-441a-8548-e7a44aeb23d1" Version="0.6.1" Language="en-US" Publisher="szehetner" />
+        <Identity Id="InliningAnalyzer-a4c401b8-a782-441a-8548-e7a44aeb23d1" Version="0.6.2" Language="en-US" Publisher="szehetner" />
         <DisplayName>Inlining Analyzer</DisplayName>
         <Description xml:space="preserve">Want to know if a method will be inlined by the JIT Compiler? Inlining Analyzer highlights all method calls right in the source code and also displays the reason for a failed inline as given by the JIT Compiler.</Description>
         <Icon>IconLarge.png</Icon>
