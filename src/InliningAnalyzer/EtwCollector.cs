@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    public class Analyzer : IDisposable
+    public class EtwCollector : IDisposable
     {
         private const int EVENTID_JITTING_STARTED = 145;
         private const int EVENTID_INLINING_SUCCEEDED = 185;
@@ -26,16 +26,13 @@ namespace InliningAnalyzer
         private ManualResetEventSlim _isFinished;
 
         private bool _recordEventDetails;
-        public List<InliningEvent> _eventDetails;
 
-        public List<InliningEvent> EventDetails => _eventDetails;
-
-        public Analyzer(bool recordEventDetails = false)
+        public EtwCollector(bool recordEventDetails)
         {
             _assemblyCallGraph = new AssemblyCallGraph();
             _recordEventDetails = recordEventDetails;
             if (_recordEventDetails)
-                _eventDetails = new List<InliningEvent>();
+                _assemblyCallGraph.EventDetails = new List<InliningEvent>();
         }
 
         public void StartEventTrace(int processId)
@@ -104,19 +101,22 @@ namespace InliningAnalyzer
 
             var inlinerMethod = _assemblyCallGraph.GetOrAddMethod(data.InlinerNamespace, data.InlinerName, data.InlinerNameSignature);
             var calledMethod = _assemblyCallGraph.GetOrAddMethod(data.InlineeNamespace, data.InlineeName, data.InlineeNameSignature);
-            
-            inlinerMethod.MethodCalls.Add(new MethodCall
-                                            {
-                                                Target = calledMethod,
-                                                IsInlined = false,
-                                                FailReason = data.FailReason
-                                            });
+
+            var methodCall = new MethodCall
+                {
+                    Source = inlinerMethod,
+                    Target = calledMethod,
+                    IsInlined = false,
+                    FailReason = data.FailReason
+                };
+            inlinerMethod.MethodCalls.Add(methodCall);
+            calledMethod.CalledBy.Add(methodCall);
 
             if (data.FailAlways)
                 calledMethod.InlineFailsAlways = true;
 
             if (_recordEventDetails)
-                _eventDetails.Add(new InliningEvent(data));
+                _assemblyCallGraph.EventDetails.Add(new InliningEvent(data));
         }
 
         private void Clr_MethodInliningSucceeded(Microsoft.Diagnostics.Tracing.Parsers.Clr.MethodJitInliningSucceededTraceData data)
@@ -127,14 +127,17 @@ namespace InliningAnalyzer
             var inlinerMethod = _assemblyCallGraph.GetOrAddMethod(data.InlinerNamespace, data.InlinerName, data.InlinerNameSignature);
             var calledMethod = _assemblyCallGraph.GetOrAddMethod(data.InlineeNamespace, data.InlineeName, data.InlineeNameSignature);
 
-            inlinerMethod.MethodCalls.Add(new MethodCall
-                                            {
-                                                Target = calledMethod,
-                                                IsInlined = true
-                                            });
+            var methodCall = new MethodCall
+                {
+                    Source = inlinerMethod,
+                    Target = calledMethod,
+                    IsInlined = true
+                };
+            inlinerMethod.MethodCalls.Add(methodCall);
+            calledMethod.CalledBy.Add(methodCall);
 
             if (_recordEventDetails)
-                _eventDetails.Add(new InliningEvent(data));
+                _assemblyCallGraph.EventDetails.Add(new InliningEvent(data));
         }
 
         public void Dispose()

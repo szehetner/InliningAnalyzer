@@ -7,26 +7,21 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    [ProtoContract]
     public class Method
     {
-        [ProtoMember(1)]
         public string TypeName { get; set; }
 
-        [ProtoMember(2)]
         public string Name { get; set; }
 
-        [ProtoMember(3)]
         public string Signature { get; set; }
 
-        [ProtoMember(4)]
         public List<MethodCall> MethodCalls { get; set; } = new List<MethodCall>();
 
-        [ProtoMember(5)]
         public bool InlineFailsAlways { get; set; }
 
-        [ProtoMember(6)]
         public int ILSize { get; set; }
+
+        public HashSet<MethodCall> CalledBy { get; set; } = new HashSet<MethodCall>();
 
         public Method()
         {

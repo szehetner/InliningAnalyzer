@@ -13,8 +13,6 @@ namespace InliningAnalyzer
         private readonly Assembly _assembly;
         private readonly string _methodSpecifier;
 
-        private const BindingFlags SEARCH_BINDINGS = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-
         public SingleMethodProvider(Assembly assembly, string methodSpecifier)
         {
             _assembly = assembly;
@@ -32,11 +30,7 @@ namespace InliningAnalyzer
             string[] parameters = match.Groups[3].Value.Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             
             var type = _assembly.GetType(typeName);
-            MethodBase[] candidates;
-            if (methodName == "ctor")
-                candidates = type.GetConstructors(SEARCH_BINDINGS);
-            else
-                candidates = type.GetMethods(SEARCH_BINDINGS).Where(m => m.Name == methodName).ToArray();
+            var candidates = ReflectionHelper.GetMethodCandidates(type, methodName);
 
             if (candidates.Length == 1)
             {

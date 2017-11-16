@@ -13,7 +13,7 @@ namespace InliningAnalyzer
         public static JitCompiler Create(string[] args)
         {
             if (args.Length == 0)
-                throw new ArgumentOutOfRangeException("Expected arg contents: assemblyFile and optional method name");
+                throw new ArgumentOutOfRangeException("Expected arg contents: assemblyFile and optional method name or method list");
 
             string assemblyFile = args[0];
             string assemblyPath = Path.GetDirectoryName(assemblyFile);
@@ -22,7 +22,18 @@ namespace InliningAnalyzer
             IMethodProvider methodProvider;
             if (args.Length == 2)
             {
-                methodProvider = new SingleMethodProvider(assembly, args[1].Trim('"'));
+                if (args[1].StartsWith("/m:"))
+                {
+                    methodProvider = new SingleMethodProvider(assembly, args[1].Substring(3).Trim('"'));
+                }
+                else if (args[1].StartsWith("/l:"))
+                {
+                    methodProvider = new OrderedMethodProvider(assembly, args[1].Substring(3).Trim('"'));
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("Expected method name or method list");
+                }
             }
             else
             {

@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    [ProtoContract]
     public class AssemblyCallGraph
     {
-        [ProtoMember(1)]
         public string AssemblyName { get; set; }
 
-        [ProtoMember(2)]
         public Dictionary<string, JitType> Types { get; set; }
+
+        public List<InliningEvent> EventDetails { get; set; }
 
         public AssemblyCallGraph()
         {

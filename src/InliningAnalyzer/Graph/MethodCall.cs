@@ -7,17 +7,14 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-
-    [ProtoContract]
     public class MethodCall
     {
-        [ProtoMember(1, AsReference = true)]
+        public Method Source { get; set; }
+
         public Method Target { get; set; }
 
-        [ProtoMember(2)]
         public bool IsInlined { get; set; }
 
-        [ProtoMember(3)]
         public string FailReason { get; set; }
 
         public override string ToString()

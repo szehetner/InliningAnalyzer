@@ -57,10 +57,7 @@ namespace Tests.Model
 
         private void RunMappingTest(string resourceFileName)
         {
-            string source = GetEmbeddedResource(resourceFileName);
-
-            var analyzerResult = RoslynCompiler.Run(source);
-            //var analyzerResult = RoslynCompiler.Analyze(source);
+            var analyzerResult = RoslynCompiler.Run(resourceFileName);
 
             AnalyzerModel analyzerModel = new AnalyzerModel() { CallGraph = analyzerResult.CallGraph };
             CodeModel codeModel = new CodeModel() { AnalyzerModel = analyzerModel };
@@ -83,20 +80,11 @@ namespace Tests.Model
                 {
                     Console.WriteLine("No mapped Method found for " + node.ToString());
                     Console.WriteLine("Events:\r\n");
-                    foreach (var e in analyzerResult.Events)
+                    foreach (var e in analyzerResult.CallGraph.EventDetails)
                         Console.WriteLine(e.ToString());
 
                     Assert.Fail("No mapped Method found for " + node.ToString());
                 }
-            }
-        }
-
-        private string GetEmbeddedResource(string resourceFileName)
-        {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFileName))
-            {
-                StreamReader reader = new StreamReader(stream);
-                return reader.ReadToEnd();
             }
         }
     }

@@ -8,7 +8,12 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace VsExtension.Shell
 {
-    public class OutputWindowLogger
+    public interface ILogger
+    {
+        void WriteText(string text);
+    }
+
+    public class OutputWindowLogger : ILogger
     {
         public Guid OutputPaneGuid = new Guid("932151e4-de47-4948-b243-5ab21cb417ef");
 

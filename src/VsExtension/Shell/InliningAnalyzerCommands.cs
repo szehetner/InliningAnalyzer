@@ -21,6 +21,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using EnvDTE;
 using Microsoft.VisualStudio.LanguageServices;
+using VsExtension.Shell.Runner;
 
 namespace VsExtension
 {
@@ -258,30 +259,12 @@ namespace VsExtension
                 _outputLogger.WriteText("Method: " + methodName);
             _outputLogger.WriteText("");
 
-            using (var analyzer = new Analyzer())
-            {
-                JitHostController jitController = new JitHostController(assemblyFile, platformTarget, methodName);
-                jitController.StartProcess();
-                jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
-                jitController.Process.BeginOutputReadLine();
-
-                analyzer.StartEventTrace(jitController.Process.Id);
-                jitController.RunJitCompilation();
-                analyzer.StopEventTrace();
-
-                jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
-
-                AnalyzerModel.CallGraph = analyzer.AssemblyCallGraph;
-
-                _outputLogger.WriteText("Finished Inlining Analyzer");
-                _statusBarLogger.StopProgressAnimation();
-                _statusBarLogger.Clear();
-            }
-        }
-
-        private void JitHostOutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            _outputLogger.WriteText(e.Data);
+            var runner = new JitRunner(assemblyFile, platformTarget, methodName, _outputLogger);
+            AnalyzerModel.CallGraph = runner.Run();
+                        
+            _outputLogger.WriteText("Finished Inlining Analyzer");
+            _statusBarLogger.StopProgressAnimation();
+            _statusBarLogger.Clear();
         }
 
         private PlatformTarget GetPlatformTarget(EnvDTE.Project vsProject)

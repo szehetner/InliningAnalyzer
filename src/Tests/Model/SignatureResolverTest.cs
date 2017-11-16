@@ -21,7 +21,7 @@ namespace Tests.Model
             string source = GetSampleSource();
 
             var model = RoslynCompiler.GetSemanticModel(source);
-            var analyzerResult = RoslynCompiler.Run(source);
+            var analyzerResult = RoslynCompiler.Run("Tests.Model.SignatureResolverSamples.cs");
 
             var jitType = analyzerResult.CallGraph.GetJitType("Tests.Model.SignatureResolverSamples");
             var innerType = analyzerResult.CallGraph.GetJitType("Tests.Model.SignatureResolverSamples+InnerClass");

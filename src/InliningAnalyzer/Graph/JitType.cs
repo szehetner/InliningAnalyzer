@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    [ProtoContract]
     public class JitType
     {
-        [ProtoMember(1)]
         public string FullName { get; set; }
 
-        [ProtoMember(2)]
         public Dictionary<string, MethodGroup> Methods { get; set; } = new Dictionary<string, MethodGroup>();
 
         public JitType()

@@ -18,41 +18,32 @@ namespace Tests.Model
 {
     public class RoslynCompiler
     {
-        public static (SemanticModel SemanticModel, AssemblyCallGraph CallGraph, List<InliningEvent> Events) Run(string source)
+        public static (SemanticModel SemanticModel, AssemblyCallGraph CallGraph) Run(string resourceFileName)
         {
+            string source = GetEmbeddedResource(resourceFileName);
+
             var tree = CSharpSyntaxTree.ParseText(source);
-            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-            var systemData = MetadataReference.CreateFromFile(typeof(IDataReader).Assembly.Location);
-            var compilation = CSharpCompilation.Create("UnitTestCompilation",
-                syntaxTrees: new[] { tree }, references: new[] { mscorlib, systemData }, 
-                options:new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe:true, optimizationLevel:OptimizationLevel.Release));
+            CSharpCompilation compilation = CreateCSharpCompilation(tree);
 
             var tempFileName = Path.GetTempFileName();
             try
             {
-                using (var stream = new FileStream(tempFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                {
-                    var result = compilation.Emit(stream);
-                    if (!result.Success)
-                    {
-                        throw new Exception(string.Join("\r\n", result.Diagnostics.Select(d => d.ToString())));
-                    }
-                }
+                CreateAssembly(compilation, tempFileName);
 
-                using (var analyzer = new Analyzer(true))
+                using (var etwCollector = new EtwCollector(true))
                 {
-                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64, null);
+                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64, null, null);
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
                     jitController.Process.BeginOutputReadLine();
 
-                    analyzer.StartEventTrace(jitController.Process.Id);
+                    etwCollector.StartEventTrace(jitController.Process.Id);
                     jitController.RunJitCompilation();
-                    analyzer.StopEventTrace();
+                    etwCollector.StopEventTrace();
 
                     jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
 
-                    return (compilation.GetSemanticModel(tree), analyzer.AssemblyCallGraph, analyzer.EventDetails);
+                    return (compilation.GetSemanticModel(tree), etwCollector.AssemblyCallGraph);
                 }
             }
             finally
@@ -61,7 +52,40 @@ namespace Tests.Model
                     File.Delete(tempFileName);
             }
         }
-        
+
+        public static string CreateAssembly(string resourceFileName)
+        {
+            string source = GetEmbeddedResource(resourceFileName);
+            var tree = CSharpSyntaxTree.ParseText(source);
+            CSharpCompilation compilation = CreateCSharpCompilation(tree);
+
+            var tempFileName = Path.GetTempFileName();
+            CreateAssembly(compilation, tempFileName);
+            return tempFileName;
+        }
+
+        private static CSharpCompilation CreateCSharpCompilation(SyntaxTree tree)
+        {
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var systemData = MetadataReference.CreateFromFile(typeof(IDataReader).Assembly.Location);
+            var compilation = CSharpCompilation.Create("UnitTestCompilation",
+                syntaxTrees: new[] { tree }, references: new[] { mscorlib, systemData },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, optimizationLevel: OptimizationLevel.Release));
+            return compilation;
+        }
+
+        private static void CreateAssembly(CSharpCompilation compilation, string filename)
+        {
+            using (var stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                var result = compilation.Emit(stream);
+                if (!result.Success)
+                {
+                    throw new Exception(string.Join("\r\n", result.Diagnostics.Select(d => d.ToString())));
+                }
+            }
+        }
+
         private static void JitHostOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             Console.WriteLine(e.Data);
@@ -77,16 +101,13 @@ namespace Tests.Model
             return compilation.GetSemanticModel(tree);
         }
 
-        public static (AssemblyCallGraph CallGraph, List<InliningEvent> Events) Analyze(string source)
+        private static string GetEmbeddedResource(string resourceFileName)
         {
-            CSharpCodeProvider provider = new CSharpCodeProvider();
-            var result = provider.CompileAssemblyFromSource(new CompilerParameters() { GenerateInMemory = true, CompilerOptions = "/unsafe" }, source);
-            if (result.Errors.HasErrors)
-                Assert.Fail(string.Join("\r\n", result.Errors.OfType<CompilerError>().Select(e => e.ToString())));
-
-            var assembly = result.CompiledAssembly;
-
-            return InprocessAnalyzer.Analyze(assembly);
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFileName))
+            {
+                StreamReader reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
         }
     }
 }

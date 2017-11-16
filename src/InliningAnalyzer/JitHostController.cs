@@ -11,17 +11,19 @@ namespace InliningAnalyzer
 {
     public class JitHostController
     {
-        private string _assemblyFile;
-        private PlatformTarget _platformTarget;
-        private string _methodName;
+        private readonly string _assemblyFile;
+        private readonly PlatformTarget _platformTarget;
+        private readonly string _methodName;
+        private readonly string _methodListFile;
 
         public Process Process { get; private set; }
         
-        public JitHostController(string assemblyFile, PlatformTarget platformTarget, string methodName)
+        public JitHostController(string assemblyFile, PlatformTarget platformTarget, string methodName, string methodListFile)
         {
             _assemblyFile = assemblyFile;
             _platformTarget = platformTarget;
             _methodName = methodName;
+            _methodListFile = methodListFile;
         }
 
         private string GetJitHostExePath()
@@ -51,10 +53,13 @@ namespace InliningAnalyzer
 
         private string BuildArguments()
         {
+            if (_methodListFile != null)
+                return "\"" + _assemblyFile + "\" /l:\"" + _methodListFile + "\"";
+
             if (_methodName == null)
                 return "\"" + _assemblyFile + "\"";
 
-            return "\"" + _assemblyFile + "\" \"" + _methodName + "\"";
+            return "\"" + _assemblyFile + "\" /m:\"" + _methodName + "\"";
         }
         
         public void RunJitCompilation()
