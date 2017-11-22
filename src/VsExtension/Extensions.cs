@@ -68,7 +68,7 @@ namespace VsExtension
             if (!explicitReferenceTypes && typeArgument.IsReferenceType)
                 return "System.__Canon";
 
-            if (typeArgument.IsDefinition)
+            if (typeArgument.IsDefinition && typeArgument.SpecialType == SpecialType.None)
                 return typeArgument.Name;
 
             return GetFullTypename(typeArgument);

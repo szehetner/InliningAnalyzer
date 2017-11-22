@@ -30,7 +30,7 @@ namespace InliningAnalyzer
             string[] parameters = match.Groups[3].Value.Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             
             var type = _assembly.GetType(typeName);
-            var candidates = ReflectionHelper.GetMethodCandidates(type, methodName);
+            var candidates = EtwSignatureMapper.GetMethodCandidates(type, methodName);
 
             if (candidates.Length == 1)
             {

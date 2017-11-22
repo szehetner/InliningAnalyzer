@@ -153,6 +153,7 @@
     <Compile Include="Analyzer\Dependencies\DependencyResolverTest.cs" />
     <Compile Include="Analyzer\SingleMethodProviderTest.cs" />
     <Compile Include="Analyzer\OrderedMethodProviderTest.cs" />
+    <Compile Include="Analyzer\EtwSignatureMapperTest.cs" />
     <Compile Include="Model\ConsoleLogger.cs" />
     <Compile Include="Model\RoslynCompiler.cs" />
     <EmbeddedResource Include="Model\Samples\BasicInline.cs" />
@@ -163,6 +164,7 @@
     <EmbeddedResource Include="Model\Samples\GenericClass.cs" />
     <EmbeddedResource Include="Model\Samples\MultipleCalls.cs" />
     <EmbeddedResource Include="Model\Samples\MethodOrdering.cs" />
+    <EmbeddedResource Include="Model\Samples\Overloads.cs" />
     <Compile Include="Model\SignatureResolverTest.cs" />
     <EmbeddedResource Include="Model\SignatureResolverSamples.cs" />
     <Compile Include="Model\MappingTest.cs" />

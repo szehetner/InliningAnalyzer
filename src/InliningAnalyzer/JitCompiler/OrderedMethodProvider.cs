@@ -38,7 +38,7 @@ namespace InliningAnalyzer
                 if (!types.TryGetValue(methodItem.FullTypeName, out Type type))
                     continue;
 
-                var candidates = ReflectionHelper.GetMethodCandidates(type, methodItem.MethodName);
+                var candidates = EtwSignatureMapper.GetMethodCandidates(type, methodItem.MethodName);
                 if (candidates.Length == 0)
                     throw new Exception($"Method {type.FullName}.{methodItem.MethodName} could not be found.");
 
@@ -48,8 +48,7 @@ namespace InliningAnalyzer
 
         private static MethodBase SelectOverload(MethodBase[] methods, string signature)
         {
-            // TODO: overload resolution
-            return methods[0];
+            return EtwSignatureMapper.SelectOverload(methods, signature);
         }
     }
 }

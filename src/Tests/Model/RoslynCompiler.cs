@@ -64,11 +64,12 @@ namespace Tests.Model
             return tempFileName;
         }
 
+        private static int _assemblyIndex = 1;
         private static CSharpCompilation CreateCSharpCompilation(SyntaxTree tree)
         {
             var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
             var systemData = MetadataReference.CreateFromFile(typeof(IDataReader).Assembly.Location);
-            var compilation = CSharpCompilation.Create("UnitTestCompilation",
+            var compilation = CSharpCompilation.Create("UnitTestCompilation" + _assemblyIndex++,
                 syntaxTrees: new[] { tree }, references: new[] { mscorlib, systemData },
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, optimizationLevel: OptimizationLevel.Release));
             return compilation;

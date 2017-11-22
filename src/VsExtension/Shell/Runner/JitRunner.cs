@@ -19,6 +19,8 @@ namespace VsExtension.Shell.Runner
         private readonly ILogger _outputLogger;
         private readonly bool _recordEventDetails;
 
+        public AssemblyCallGraph UnorderedCallGraph { get; set; }
+
         public JitRunner(string assemblyFile, PlatformTarget platformTarget, string methodName, ILogger outputLogger, bool recordEventDetails = false)
         {
             _assemblyFile = assemblyFile;
@@ -31,6 +33,9 @@ namespace VsExtension.Shell.Runner
         public AssemblyCallGraph Run()
         {
             var callGraph = RunJitCompiler(CreateUnorderedController());
+            if (_recordEventDetails)
+                UnorderedCallGraph = callGraph;
+
             if (_methodName != null)
                 return callGraph;
 

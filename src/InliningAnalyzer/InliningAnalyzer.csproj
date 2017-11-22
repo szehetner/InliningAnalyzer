@@ -75,7 +75,7 @@
     <Compile Include="Graph\JitType.cs" />
     <Compile Include="JitCompiler\JitCompilerFactory.cs" />
     <Compile Include="JitCompiler\OrderedMethodProvider.cs" />
-    <Compile Include="JitCompiler\ReflectionHelper.cs" />
+    <Compile Include="JitCompiler\EtwSignatureMapper.cs" />
     <Compile Include="JitCompiler\SingleMethodProvider.cs" />
     <Compile Include="JitCompiler\UnorderedMethodProvider.cs" />
     <Compile Include="JitHostController.cs" />
