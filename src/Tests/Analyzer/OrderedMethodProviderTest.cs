@@ -33,10 +33,10 @@ namespace Tests.Analyzer
             var overloadType = assemblyCallGraph.GetJitType("Tests.Model.Samples.Overloads");
             var methodGroup = overloadType.Methods["A"];
             var allMethods = methodGroup.GetAllMethods().ToList();
-
+            
             try
             {
-                Assert.AreEqual(23, allMethods.Count, "Actual Methods:\r\n" + string.Join("\r\n", allMethods.Select(m => m.Signature)));
+                Assert.AreEqual(26, allMethods.Count, "Actual Methods:\r\n" + string.Join("\r\n", allMethods.Select(m => m.Signature)));
             }
             catch (Exception)
             {

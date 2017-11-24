@@ -45,7 +45,7 @@ namespace Tests.Analyzer
             TestOverload("instance void  (int32[])", "Int32[]");
             TestOverload("instance void  (int32[][])", "Int32[][]");
             TestOverload("instance void  (class System.Collections.Generic.List`1<class System.String>)", "List`1");
-            //TestOverload("instance void  (class System.Collections.Generic.Dictionary`2<class System.String,int32>)", "Dictionary`2");
+            TestOverload("instance void  (class System.Collections.Generic.Dictionary`2<class System.String,int32>)", "Dictionary`2");
         }
 
         private void TestOverload(string signature, params string[] parameterNames)

@@ -30,7 +30,9 @@ namespace Tests.Model.Samples
         public void A(int[] arg1) { }
         public void A(int[][] arg1) { }
         public void A(List<string> arg1) { }
-        //public void A(Dictionary<string, int> arg1) { }
+        public void A(Dictionary<string, int> arg1) { }
+        public void A(Dictionary<string, List<string>> arg1) { }
+        public void A(Dictionary<string, List<Tuple<int, decimal, int[], Dictionary<string, int>, bool>>> arg1) { }
     }
 
     public class DummyClass { }

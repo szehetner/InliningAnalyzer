@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsExtension", "VsExtension\VsExtension.csproj", "{DC87E41D-81B3-45C7-AAB6-A02D24D48BB5}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitHost.x64", "JitHost.x64\JitHost.x64.csproj", "{7E6D49BE-CF2B-4184-93F6-22B627CCF119}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitHost.x86", "JitHost.x86\JitHost.x86.csproj", "{90BE37AF-F818-4FB2-A88C-7B57DB9101EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTest", "PerformanceTest\PerformanceTest.csproj", "{00D9ACBE-751A-469C-A235-C41DADDBB9F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{90BE37AF-F818-4FB2-A88C-7B57DB9101EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90BE37AF-F818-4FB2-A88C-7B57DB9101EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90BE37AF-F818-4FB2-A88C-7B57DB9101EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

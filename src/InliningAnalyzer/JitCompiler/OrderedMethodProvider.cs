@@ -40,9 +40,18 @@ namespace InliningAnalyzer
 
                 var candidates = EtwSignatureMapper.GetMethodCandidates(type, methodItem.MethodName);
                 if (candidates.Length == 0)
-                    throw new Exception($"Method {type.FullName}.{methodItem.MethodName} could not be found.");
+                {
+                    Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName} could not be found.");
+                    continue;
+                }
 
-                yield return SelectOverload(candidates, methodItem.Signature);
+                var method = SelectOverload(candidates, methodItem.Signature);
+                if (method == null)
+                {
+                    Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName}({methodItem.Signature}) could not be found.");
+                    continue;
+                }
+                yield return method;
             }
         }
 

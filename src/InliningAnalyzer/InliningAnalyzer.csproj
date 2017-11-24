@@ -70,6 +70,7 @@
     <Compile Include="InliningAnalyzerSource.cs" />
     <Compile Include="Graph\AssemblyCallGraph.cs" />
     <Compile Include="InliningEvent.cs" />
+    <Compile Include="JitCompiler\EtwSignatureParser.cs" />
     <Compile Include="JitCompiler\IMethodProvider.cs" />
     <Compile Include="JitCompiler\JitCompiler.cs" />
     <Compile Include="Graph\JitType.cs" />

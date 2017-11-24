@@ -154,6 +154,7 @@
     <Compile Include="Analyzer\SingleMethodProviderTest.cs" />
     <Compile Include="Analyzer\OrderedMethodProviderTest.cs" />
     <Compile Include="Analyzer\EtwSignatureMapperTest.cs" />
+    <Compile Include="Analyzer\EtwSignatureParserTest.cs" />
     <Compile Include="Model\ConsoleLogger.cs" />
     <Compile Include="Model\RoslynCompiler.cs" />
     <EmbeddedResource Include="Model\Samples\BasicInline.cs" />

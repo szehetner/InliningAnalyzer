@@ -44,9 +44,16 @@ namespace VsExtension.Shell.Runner
             var methodList = resolver.GetOrderedMethodList();
 
             string methodListFile = SerializeMethodList(methodList);
-
-            var orderedCallGraph = RunJitCompiler(CreateOrderedController(methodListFile));
-            return orderedCallGraph;
+            try
+            {
+                var orderedCallGraph = RunJitCompiler(CreateOrderedController(methodListFile));
+                return orderedCallGraph;
+            }
+            finally
+            {
+                if (File.Exists(methodListFile))
+                    File.Delete(methodListFile);
+            }
         }
 
         public string SerializeMethodList(MethodCompilationList methodList)
