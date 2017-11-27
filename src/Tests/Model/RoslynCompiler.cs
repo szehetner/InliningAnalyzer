@@ -43,6 +43,7 @@ namespace Tests.Model
 
                     jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
 
+                    CallGraphPostProcessor.Process(etwCollector.AssemblyCallGraph);
                     return (compilation.GetSemanticModel(tree), etwCollector.AssemblyCallGraph);
                 }
             }

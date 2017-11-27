@@ -40,12 +40,12 @@ namespace InliningAnalyzer
                 if (overload != null)
                     return overload;
 
-                overload = new Method(FullName, name, signature);
+                overload = new Method(this, FullName, name, signature);
                 methodGroup.AddMethod(overload);
                 return overload;
             }
 
-            var method = new Method(FullName, name, signature);
+            var method = new Method(this, FullName, name, signature);
             Methods.Add(name, new MethodGroup(method));
             return method;
         }

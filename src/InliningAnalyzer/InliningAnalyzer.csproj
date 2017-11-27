@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EtwCollector.cs" />
+    <Compile Include="Graph\CallGraphPostProcessor.cs" />
     <Compile Include="Graph\Dependencies\DependencyGraph.cs" />
     <Compile Include="Graph\Dependencies\DependencyGraphBuilder.cs" />
     <Compile Include="Graph\Dependencies\DependencyMethod.cs" />

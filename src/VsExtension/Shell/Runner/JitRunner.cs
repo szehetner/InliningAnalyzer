@@ -91,6 +91,7 @@ namespace VsExtension.Shell.Runner
 
                 jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
 
+                CallGraphPostProcessor.Process(etwCollector.AssemblyCallGraph);
                 return etwCollector.AssemblyCallGraph;
             }
         }

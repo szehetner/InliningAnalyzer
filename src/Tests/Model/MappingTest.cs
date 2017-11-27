@@ -55,6 +55,12 @@ namespace Tests.Model
             RunMappingTest("Tests.Model.Samples.MultipleCalls.cs");
         }
 
+        [TestMethod]
+        public void TestIterator()
+        {
+            RunMappingTest("Tests.Model.Samples.Iterator.cs");
+        }
+
         private void RunMappingTest(string resourceFileName)
         {
             var analyzerResult = RoslynCompiler.Run(resourceFileName);

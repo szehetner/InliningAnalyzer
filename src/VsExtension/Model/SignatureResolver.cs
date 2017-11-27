@@ -76,6 +76,21 @@ namespace VsExtension.Model
             }
             if (isPointer)
                 builder.Append("*");
+
+            if (type is INamedTypeSymbol namedType && namedType.IsGenericType)
+            {
+                builder.Append("`");
+                builder.Append(namedType.TypeArguments.Length);
+                builder.Append("<");
+                for (int i = 0; i < namedType.TypeArguments.Length; i++)
+                {
+                    var typeArgument = namedType.TypeArguments[i];
+                    AppendTypeName(builder, typeArgument);
+                    if (i < namedType.TypeArguments.Length - 1)
+                        builder.Append(",");
+                }
+                builder.Append(">");
+            }
         }
         
         private static string GetSpecialTypeName(ITypeSymbol type)

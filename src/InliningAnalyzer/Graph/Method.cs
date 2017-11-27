@@ -9,6 +9,8 @@ namespace InliningAnalyzer
 {
     public class Method
     {
+        public JitType ParentType { get; set; }
+
         public string TypeName { get; set; }
 
         public string Name { get; set; }
@@ -27,8 +29,9 @@ namespace InliningAnalyzer
         {
         }
 
-        public Method(string typeName, string name, string signature)
+        public Method(JitType parentType, string typeName, string name, string signature)
         {
+            ParentType = parentType;
             TypeName = typeName;
             Name = name;
             Signature = signature;
@@ -44,6 +47,16 @@ namespace InliningAnalyzer
                 return candidates[0];
 
             return candidates.FirstOrDefault(m => signature == null || m.Target.Signature == signature);
+        }
+
+        internal void MoveCallsFrom(Method other)
+        {
+            foreach (var methodCall in other.MethodCalls)
+            {
+                methodCall.Source = this;
+                MethodCalls.Add(methodCall);
+            }
+            other.MethodCalls.Clear();
         }
 
         public override string ToString()
