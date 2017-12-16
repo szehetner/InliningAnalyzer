@@ -40,6 +40,13 @@ namespace VsExtension.Model
             if (symbol == null)
                 return null;
 
+            if (symbol.Kind == SymbolKind.Local && node.Parent is ElementAccessExpressionSyntax)
+            {
+                symbol = GetSymbol(doc, node.Parent);
+                if (symbol == null)
+                    return null;
+            }
+
             if (symbol.Kind == SymbolKind.Method)
             {
                 return ResolveMethod(doc, node, symbol);
@@ -112,11 +119,14 @@ namespace VsExtension.Model
         {
             var propertySymbol = (IPropertySymbol)symbol;
             bool isGetAccess = true;
-            var assignment = node.FirstAncestorOrSelf<AssignmentExpressionSyntax>();
-            if (assignment != null)
+            if (!propertySymbol.ReturnsByRef)
             {
-                if (assignment.Left.DescendantNodesAndSelf().Contains(node))
-                    isGetAccess = false; // if it appears on the left side of an assignment, it is a setter, otherwise getter
+                var assignment = node.FirstAncestorOrSelf<AssignmentExpressionSyntax>();
+                if (assignment != null)
+                {
+                    if (assignment.Left.DescendantNodesAndSelf().Contains(node))
+                        isGetAccess = false; // if it appears on the left side of an assignment, it is a setter, otherwise getter
+                }
             }
 
             return (isGetAccess ? propertySymbol.GetMethod : propertySymbol.SetMethod)?.MetadataName;

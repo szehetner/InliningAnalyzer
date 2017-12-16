@@ -167,6 +167,7 @@
     <EmbeddedResource Include="Model\Samples\MethodOrdering.cs" />
     <EmbeddedResource Include="Model\Samples\Overloads.cs" />
     <EmbeddedResource Include="Model\Samples\Iterator.cs" />
+    <EmbeddedResource Include="Model\Samples\Indexer.cs" />
     <Compile Include="Model\SignatureResolverTest.cs" />
     <EmbeddedResource Include="Model\SignatureResolverSamples.cs" />
     <Compile Include="Model\MappingTest.cs" />
