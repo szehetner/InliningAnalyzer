@@ -37,5 +37,5 @@ using System.Runtime.InteropServices;
 
 public static class ProjectVersion
 {
-    public const string VersionNumber = "0.6.3.0";
+    public const string VersionNumber = "0.6.4.0";
 }
