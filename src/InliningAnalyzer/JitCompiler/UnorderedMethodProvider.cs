@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,9 @@ namespace InliningAnalyzer
             Type[] types = _assembly.GetTypes();
             foreach (Type type in types)
             {
+                if (IsIgnored(type))
+                    continue;
+
                 BindingFlags filterFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
 
                 MethodBase[] methods = type.GetMethods(filterFlags);
@@ -38,6 +42,14 @@ namespace InliningAnalyzer
                     yield return method;
                 }
             }
+        }
+
+        public bool IsIgnored(Type type)
+        {
+            if (typeof(IAsyncStateMachine).IsAssignableFrom(type))
+                return true; // will be called explicitly when compiling the corresponding async method
+
+            return false;
         }
     }
 }

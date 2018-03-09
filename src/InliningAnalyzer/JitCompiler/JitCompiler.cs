@@ -12,22 +12,18 @@ namespace InliningAnalyzer
     public class JitCompiler
     {
         private readonly string _assemblyPath;
-        private readonly Assembly _assembly;
         private readonly IMethodProvider _methodProvider;
 
-        public JitCompiler(string assemblyFile)
-        {
-            _assemblyPath = Path.GetDirectoryName(assemblyFile);
-            _assembly = Assembly.LoadFile(assemblyFile);
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        public JitCompiler(Assembly assembly, string assemblyPath, IMethodProvider methodProvider)
+        public JitCompiler(string assemblyPath, IMethodProvider methodProvider)
         {
             _assemblyPath = assemblyPath;
-            _assembly = assembly;
             _methodProvider = methodProvider;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            
+            // ensure methods are jitted before compilation starts to not interfere with actual jitting events
+            RuntimeHelpers.PrepareMethod(GetType().GetMethod(nameof(PreJITMethods), BindingFlags.Instance | BindingFlags.Public).MethodHandle);
+            InliningAnalyzerSource.Log.AsyncMethodStart(null);
+            InliningAnalyzerSource.Log.AsyncMethodStop(null);
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -41,13 +37,6 @@ namespace InliningAnalyzer
             return null;
         }
 
-        public JitCompiler(Assembly assembly)
-        {
-            _assembly = assembly;
-
-            RuntimeHelpers.PrepareMethod(GetType().GetMethod(nameof(PreJITMethods), BindingFlags.Instance | BindingFlags.Public).MethodHandle);
-        }
-       
         public void PreJITMethods()
         {
             InliningAnalyzerSource.Log.StartCompilerRun();
@@ -56,7 +45,15 @@ namespace InliningAnalyzer
             {
                 try
                 {
-                    RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                    var asyncAttribute = (AsyncStateMachineAttribute)method.GetCustomAttribute(typeof(AsyncStateMachineAttribute));
+                    if (asyncAttribute == null)
+                    {
+                        CompileSyncMethod(method);
+                    }
+                    else
+                    {
+                        CompileAsyncMethod(method, asyncAttribute);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -65,6 +62,24 @@ namespace InliningAnalyzer
             }
             
             InliningAnalyzerSource.Log.StopCompilerRun();
+        }
+
+        private static void CompileSyncMethod(MethodBase method)
+        {
+            RuntimeHelpers.PrepareMethod(method.MethodHandle);
+        }
+
+        private void CompileAsyncMethod(MethodBase method, AsyncStateMachineAttribute asyncAttribute)
+        {
+            RuntimeHelpers.PrepareMethod(method.MethodHandle);
+
+            InliningAnalyzerSource.Log.AsyncMethodStart(method.Name);
+
+            var moveNextMethod = asyncAttribute.StateMachineType.GetMethod("MoveNext", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (moveNextMethod != null)
+                RuntimeHelpers.PrepareMethod(moveNextMethod.MethodHandle);
+
+            InliningAnalyzerSource.Log.AsyncMethodStop(method.Name);
         }
     }
 }

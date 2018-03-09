@@ -66,7 +66,13 @@ namespace Tests.Model
         {
             RunMappingTest("Tests.Model.Samples.Indexer.cs");
         }
-
+        
+        [TestMethod]
+        public void TestAsyncFunction()
+        {
+            RunMappingTest("Tests.Model.Samples.Async.cs");
+        }
+        
         private void RunMappingTest(string resourceFileName)
         {
             var analyzerResult = RoslynCompiler.Run(resourceFileName);

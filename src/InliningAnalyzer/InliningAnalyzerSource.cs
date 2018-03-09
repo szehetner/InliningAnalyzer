@@ -20,17 +20,19 @@ namespace InliningAnalyzer
         public class Tasks
         {
             public const EventTask CompilerRun = (EventTask)1;
+            public const EventTask AsyncMethod = (EventTask)2;
         }
 
         public class EventId
         {
             public const int StartCompilerRun = 1;
             public const int StopCompilerRun = 2;
+            public const int AsyncMethodStart = 3;
+            public const int AsyncMethodStop = 4;
         }
 
-        private static InliningAnalyzerSource _log = new InliningAnalyzerSource();
         private InliningAnalyzerSource() { }
-        public static InliningAnalyzerSource Log { get { return _log; } }
+        public static InliningAnalyzerSource Log { get; } = new InliningAnalyzerSource();
 
         [Event(EventId.StartCompilerRun, Level = EventLevel.Informational, Keywords = Keywords.JitCompiler, Opcode = EventOpcode.Start, Task = Tasks.CompilerRun)]
         internal void StartCompilerRun()
@@ -42,6 +44,18 @@ namespace InliningAnalyzer
         internal void StopCompilerRun()
         {
             WriteEvent(EventId.StopCompilerRun);
+        }
+
+        [Event(EventId.AsyncMethodStart, Level = EventLevel.Informational, Keywords = Keywords.JitCompiler, Opcode = EventOpcode.Start, Task = Tasks.AsyncMethod)]
+        internal void AsyncMethodStart(string methodName)
+        {
+            WriteEvent(EventId.AsyncMethodStart);
+        }
+
+        [Event(EventId.AsyncMethodStop, Level = EventLevel.Informational, Keywords = Keywords.JitCompiler, Opcode = EventOpcode.Stop, Task = Tasks.AsyncMethod)]
+        internal void AsyncMethodStop(string methodName)
+        {
+            WriteEvent(EventId.AsyncMethodStop);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace InliningAnalyzer
         private const int EVENTID_INLINING_SUCCEEDED = 185;
         private const int EVENTID_INLINING_FAILED = 186;
 
-        private AssemblyCallGraph _assemblyCallGraph;
+        private readonly AssemblyCallGraph _assemblyCallGraph;
         private TraceEventSession _session;
 
         public AssemblyCallGraph AssemblyCallGraph => _assemblyCallGraph;
@@ -25,7 +25,10 @@ namespace InliningAnalyzer
         private bool _isEnabled;
         private ManualResetEventSlim _isFinished;
 
-        private bool _recordEventDetails;
+        private readonly bool _recordEventDetails;
+
+        private Method _lastMethod;
+        private Method _currentAsyncMethod;
 
         public EtwCollector(bool recordEventDetails)
         {
@@ -75,6 +78,7 @@ namespace InliningAnalyzer
             var method = _assemblyCallGraph.GetOrAddMethod(data.MethodNamespace, data.MethodName, data.MethodSignature);
             method.ILSize = data.MethodILSize;
 
+            _lastMethod = method;
             // not called for NGENed assemblies!
         }
 
@@ -92,6 +96,14 @@ namespace InliningAnalyzer
                 _isEnabled = false;
                 _isFinished.Set();
             }
+            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.AsyncMethodStart)
+            {
+                _currentAsyncMethod = _lastMethod;
+            }
+            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.AsyncMethodStop)
+            {
+                _currentAsyncMethod = null;
+            }
         }
 
         private void Clr_MethodInliningFailed(Microsoft.Diagnostics.Tracing.Parsers.Clr.MethodJitInliningFailedTraceData data)
@@ -100,6 +112,9 @@ namespace InliningAnalyzer
                 return;
 
             var inlinerMethod = _assemblyCallGraph.GetOrAddMethod(data.InlinerNamespace, data.InlinerName, data.InlinerNameSignature);
+            if (_currentAsyncMethod != null)
+                inlinerMethod = _currentAsyncMethod;
+
             var calledMethod = _assemblyCallGraph.GetOrAddMethod(data.InlineeNamespace, data.InlineeName, data.InlineeNameSignature);
 
             var methodCall = new MethodCall
@@ -117,6 +132,8 @@ namespace InliningAnalyzer
 
             if (_recordEventDetails)
                 _assemblyCallGraph.EventDetails.Add(new InliningEvent(data));
+
+            _lastMethod = inlinerMethod;
         }
 
         private void Clr_MethodInliningSucceeded(Microsoft.Diagnostics.Tracing.Parsers.Clr.MethodJitInliningSucceededTraceData data)
@@ -125,6 +142,9 @@ namespace InliningAnalyzer
                 return;
 
             var inlinerMethod = _assemblyCallGraph.GetOrAddMethod(data.InlinerNamespace, data.InlinerName, data.InlinerNameSignature);
+            if (_currentAsyncMethod != null)
+                inlinerMethod = _currentAsyncMethod;
+
             var calledMethod = _assemblyCallGraph.GetOrAddMethod(data.InlineeNamespace, data.InlineeName, data.InlineeNameSignature);
 
             var methodCall = new MethodCall
@@ -138,6 +158,8 @@ namespace InliningAnalyzer
 
             if (_recordEventDetails)
                 _assemblyCallGraph.EventDetails.Add(new InliningEvent(data));
+
+            _lastMethod = inlinerMethod;
         }
 
         public void Dispose()

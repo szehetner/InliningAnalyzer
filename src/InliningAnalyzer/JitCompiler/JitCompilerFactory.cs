@@ -39,7 +39,7 @@ namespace InliningAnalyzer
             {
                 methodProvider = new UnorderedMethodProvider(assembly);
             }
-            return new JitCompiler(assembly, assemblyPath, methodProvider);
+            return new JitCompiler(assemblyPath, methodProvider);
         }
     }
 }
