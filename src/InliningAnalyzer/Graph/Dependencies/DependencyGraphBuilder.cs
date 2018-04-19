@@ -55,8 +55,8 @@ namespace InliningAnalyzer.Graph.Dependencies
                 MethodName = method.Name,
                 Signature = method.Signature,
                 ILSize = method.ILSize,
-                CanBeInlined = method.CalledBy.Any(c => c.IsInlined) || method.CalledBy.All(c => c.FailReason == "Method is marked as no inline or has a cached result." 
-                                                                                              || c.FailReason == "noinline per IL/cached result")
+                CanBeInlined = method.CalledBy.Any(c => c.IsInlined) || method.CalledBy.Any(c => c.FailReason != "Method is marked as no inline or has a cached result." 
+                                                                                              || c.FailReason != "noinline per IL/cached result")
             };
         }
     }
