@@ -46,6 +46,9 @@ namespace Tests.Model
         public void Array(int[][] values) { }
         public void Array(CustomStruct[] values) { }
 
+        public void OutParam(out int value) { value = 1; }
+        public void OutParamArray(out int value, out int[] values) { value = 1; values = null; }
+
         public object this[string name] => "";
 
         private class InnerClass

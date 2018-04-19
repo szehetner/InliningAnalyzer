@@ -32,6 +32,10 @@ namespace VsExtension.Model
             for (int i = 0; i < parameters.Length; i++)
             {
                 AppendTypeName(builder, parameters[i].Type);
+
+                if (parameters[i].RefKind == RefKind.Out)
+                    builder.Append("&");
+
                 if (i != parameters.Length - 1)
                     builder.Append(",");
             }
