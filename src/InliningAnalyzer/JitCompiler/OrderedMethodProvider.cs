@@ -51,6 +51,10 @@ namespace InliningAnalyzer
                     Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName}({methodItem.Signature}) could not be found.");
                     continue;
                 }
+
+                if (UnorderedMethodProvider.IsIgnored(method))
+                    continue;
+
                 yield return method;
             }
         }

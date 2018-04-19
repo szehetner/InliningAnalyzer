@@ -14,7 +14,10 @@ namespace InliningAnalyzer
         public static MethodBase[] GetMethodCandidates(Type type, string methodName)
         {
             if (methodName == "ctor" || methodName == ".ctor")
-                return type.GetConstructors(SEARCH_BINDINGS);
+                return type.GetConstructors(SEARCH_BINDINGS).Where(m => !m.IsStatic).ToArray();
+
+            if (methodName == "cctor" || methodName == ".cctor")
+                return type.GetConstructors(SEARCH_BINDINGS).Where(m => m.IsStatic).ToArray();
 
             return type.GetMethods(SEARCH_BINDINGS).Where(m => m.Name == methodName).ToArray();
         }
@@ -55,7 +58,12 @@ namespace InliningAnalyzer
         private static string GetTypename(Type type)
         {
             if (!type.IsGenericType)
+            {
+                if (type.FullName.Contains("+"))
+                    return type.FullName.Substring(type.FullName.IndexOf("+") + 1);
+
                 return type.FullName;
+            }
 
             var genericParameters = type.GetGenericArguments();
 

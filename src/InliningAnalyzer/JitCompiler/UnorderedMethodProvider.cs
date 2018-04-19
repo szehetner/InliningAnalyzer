@@ -34,14 +34,19 @@ namespace InliningAnalyzer
 
                 foreach (MethodBase method in allMethods)
                 {
-                    if (method == null ||
-                        method.IsAbstract ||
-                        method.ContainsGenericParameters)
+                    if (IsIgnored(method))
                         continue;
 
                     yield return method;
                 }
             }
+        }
+
+        public static bool IsIgnored(MethodBase method)
+        {
+            return method == null ||
+                   method.IsAbstract ||
+                   method.ContainsGenericParameters;
         }
 
         public bool IsIgnored(Type type)
