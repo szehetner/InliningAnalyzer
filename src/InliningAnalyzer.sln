@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsExtension", "VsExtension\VsExtension.csproj", "{DC87E41D-81B3-45C7-AAB6-A02D24D48BB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InliningAnalyzer", "InliningAnalyzer\InliningAnalyzer.csproj", "{1E257E63-39D6-4B49-82A7-8CBF65A136F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InliningAnalyzer", "InliningAnalyzer\InliningAnalyzer.csproj", "{1E257E63-39D6-4B49-82A7-8CBF65A136F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{8C146611-AA24-46DA-9DAB-A9C1495F1E79}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitHost.x86", "JitHost.x86\JitHost.x86.csproj", "{90BE37AF-F818-4FB2-A88C-7B57DB9101EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTest", "PerformanceTest\PerformanceTest.csproj", "{00D9ACBE-751A-469C-A235-C41DADDBB9F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JitHost.Core.x64", "JitHost.Core.x64\JitHost.Core.x64.csproj", "{ADB4101C-4780-4D9F-8D40-83159EA5A070}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitHost.Core.x86", "JitHost.Core.x86\JitHost.Core.x86.csproj", "{8655D035-4675-4432-8B32-FB9FBBCDC23A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00D9ACBE-751A-469C-A235-C41DADDBB9F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADB4101C-4780-4D9F-8D40-83159EA5A070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADB4101C-4780-4D9F-8D40-83159EA5A070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADB4101C-4780-4D9F-8D40-83159EA5A070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADB4101C-4780-4D9F-8D40-83159EA5A070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8655D035-4675-4432-8B32-FB9FBBCDC23A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8655D035-4675-4432-8B32-FB9FBBCDC23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8655D035-4675-4432-8B32-FB9FBBCDC23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8655D035-4675-4432-8B32-FB9FBBCDC23A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

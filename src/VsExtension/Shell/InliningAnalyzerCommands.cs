@@ -6,22 +6,19 @@
 
 using System;
 using System.ComponentModel.Design;
-using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using VsExtension.Model;
 using System.ComponentModel.Composition;
 using EnvDTE80;
 using System.IO;
-using System.Reflection;
-using System.Diagnostics;
 using InliningAnalyzer;
 using VsExtension.Shell;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using EnvDTE;
 using Microsoft.VisualStudio.LanguageServices;
 using VsExtension.Shell.Runner;
+using Task = System.Threading.Tasks.Task;
 
 namespace VsExtension
 {
@@ -53,7 +50,7 @@ namespace VsExtension
 
         [Import]
         internal VisualStudioWorkspace Workspace;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="InliningAnalyzerCommands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -202,31 +199,30 @@ namespace VsExtension
                 return;
             }
 
-            RunAnalyzer(methodName);
+            await RunAnalyzer(methodName);
         }
         
-        private void StartMenuItemCallback(object sender, EventArgs e)
+        private async void StartMenuItemCallback(object sender, EventArgs e)
         {
-            RunAnalyzer(null);
+            await RunAnalyzer(null);
         }
-
-        private void RunAnalyzer(string methodName)
+        
+        private async Task RunAnalyzer(string methodName)
         {
-            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            var dte2 = (DTE2) Package.GetGlobalService(typeof(SDTE));
             var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
             if (project == null)
                 return;
 
-            var configurationManager = project.ConfigurationManager;
-            var active = project.ConfigurationManager.ActiveConfiguration;
-            var properties = project.ConfigurationManager.ActiveConfiguration.Properties;
+            var propertyProvider = CreateProjectPropertyProvider(project);
+            await propertyProvider.LoadProperties();
 
             try
             {
-                bool isOptimized = (bool)project.ConfigurationManager.ActiveConfiguration.Properties.Item("Optimize").Value;
-                if (!isOptimized)
+                if (!propertyProvider.IsOptimized)
                 {
-                    ShowError("The current build configuration does not have the \"Optimize code\" flag set and is therefore not suitable for analysing the JIT compiler.\r\n\r\nPlease enable the the \"Optimize code\" flag (under Project Properties -> Build) or switch to a non-debug configuration (e.g. 'Release') before running the Inlining Analyzer.");
+                    ShowError(
+                        "The current build configuration does not have the \"Optimize code\" flag set and is therefore not suitable for analysing the JIT compiler.\r\n\r\nPlease enable the the \"Optimize code\" flag (under Project Properties -> Build) or switch to a non-debug configuration (e.g. 'Release') before running the Inlining Analyzer.");
                     return;
                 }
             }
@@ -244,84 +240,101 @@ namespace VsExtension
                 return;
             }
 
-            string assemblyFile = GetAssemblyPath(project);
-            PlatformTarget platformTarget = GetPlatformTarget(project);
+            string assemblyFile = GetAssemblyPath(propertyProvider);
+            JitTarget jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
 
             _statusBarLogger.SetText("Running Inlining Analyzer on " + project.Name);
             _statusBarLogger.StartProgressAnimation();
 
             _outputLogger.WriteText("Starting Inlining Analyzer...");
             _outputLogger.WriteText("Assembly: " + assemblyFile);
-            _outputLogger.WriteText("Platform: " + platformTarget);
+            _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
+            _outputLogger.WriteText("Platform: " + jitTarget.Platform);
             if (methodName == null)
                 _outputLogger.WriteText("Method: All");
             else
                 _outputLogger.WriteText("Method: " + methodName);
             _outputLogger.WriteText("");
 
-            var runner = new JitRunner(assemblyFile, platformTarget, methodName, _outputLogger);
-            AnalyzerModel.CallGraph = runner.Run();
-                        
-            _outputLogger.WriteText("Finished Inlining Analyzer");
+            try
+            {
+                var runner = new JitRunner(assemblyFile, jitTarget, methodName, _outputLogger);
+                AnalyzerModel.CallGraph = runner.Run();
+
+                _outputLogger.WriteText("Finished Inlining Analyzer");
+            }
+            catch (JitCompilerException jitException)
+            {
+                ShowError(jitException.Message);
+            }
+            catch (Exception ex)
+            {
+                _outputLogger.WriteText(ex.ToString());
+                ShowError("Jit Compilation failed with errors. Check the Inlining Analyzer Output Window for details.");
+            }
+
             _statusBarLogger.StopProgressAnimation();
             _statusBarLogger.Clear();
         }
 
-        private PlatformTarget GetPlatformTarget(EnvDTE.Project vsProject)
+        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project)
+        {
+            if (IsNewProjectFormat(project))
+                return new CommonProjectPropertyProvider(project);
+
+            return new LegacyProjectPropertyProvider(project);
+        }
+
+        private static bool IsNewProjectFormat(EnvDTE.Project vsProject)
+        {
+            return vsProject.Kind == "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}";
+        }
+        
+        private TargetPlatform DetermineTargetPlatform(IProjectPropertyProvider propertyProvider)
         {
             try
             {
                 if (!Environment.Is64BitOperatingSystem)
-                    return PlatformTarget.X86;
+                    return TargetPlatform.X86;
 
-                var projectProperties = vsProject.ConfigurationManager.ActiveConfiguration.Properties;
-                string target = projectProperties.Item("PlatformTarget").Value.ToString();
+                string target = propertyProvider.PlatformTarget;
                 if (target == "x64")
-                    return PlatformTarget.X64;
+                    return TargetPlatform.X64;
 
                 if (target == "x86")
-                    return PlatformTarget.X86;
+                    return TargetPlatform.X86;
 
-                if ((bool)projectProperties.Item("Prefer32bit").Value)
-                    return PlatformTarget.X86;
+                if (propertyProvider.Prefer32Bit)
+                    return TargetPlatform.X86;
             }
             catch (Exception) { }
 
-            return GetFallbackPlatformTarget();
+            return TargetPlatform.X64;
         }
 
-        private PlatformTarget GetFallbackPlatformTarget()
-        {
-            return PlatformTarget.X64;
-        }
-
-        private static string GetAssemblyPath(EnvDTE.Project vsProject)
+        private static string GetAssemblyPath(IProjectPropertyProvider propertyProvider)
         {
             try
             {
-                string fullPath = vsProject.Properties.Item("FullPath").Value.ToString();
-                string outputPath = vsProject.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
-                string outputDir = Path.Combine(fullPath, outputPath);
-                string outputFileName = vsProject.Properties.Item("OutputFileName").Value.ToString();
-                string assemblyPath = Path.Combine(outputDir, outputFileName);
+                string outputFilename = propertyProvider.OutputFilename;
+                
+                if (File.Exists(outputFilename))
+                    return outputFilename;
 
-                if (!File.Exists(assemblyPath))
-                    return GetUserSelectedAssemblyPath(vsProject);
-
-                return assemblyPath;
+                return GetUserSelectedAssemblyPath(propertyProvider);
             }
             catch (Exception)
             {
-                return GetUserSelectedAssemblyPath(vsProject);
+                return GetUserSelectedAssemblyPath(propertyProvider);
             }
         }
 
-        private static string GetUserSelectedAssemblyPath(EnvDTE.Project vsProject)
+        private static string GetUserSelectedAssemblyPath(IProjectPropertyProvider propertyProvider)
         {
             string initialDirectory = null;
             try
             {
-                initialDirectory = Path.Combine(vsProject.Properties.Item("FullPath").Value.ToString(), "bin");
+                initialDirectory = propertyProvider.OutputPath;
             }
             catch (Exception) { }
 

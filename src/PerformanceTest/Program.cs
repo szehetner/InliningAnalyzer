@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InliningAnalyzer;
 using VsExtension.Shell.Runner;
 
 namespace PerformanceTest
@@ -13,7 +14,7 @@ namespace PerformanceTest
         {
             string assemblyFile = @"";
 
-            JitRunner jitRunner = new JitRunner(assemblyFile, InliningAnalyzer.PlatformTarget.X64, null, new NullLogger());
+            JitRunner jitRunner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new NullLogger());
             jitRunner.Run();
         }
     }

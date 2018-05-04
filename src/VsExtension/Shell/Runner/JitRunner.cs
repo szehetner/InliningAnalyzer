@@ -14,17 +14,17 @@ namespace VsExtension.Shell.Runner
     public class JitRunner
     {
         private readonly string _assemblyFile;
-        private readonly PlatformTarget _platformTarget;
+        private readonly JitTarget _jitTarget;
         private readonly string _methodName;
         private readonly ILogger _outputLogger;
         private readonly bool _recordEventDetails;
 
         public AssemblyCallGraph UnorderedCallGraph { get; set; }
 
-        public JitRunner(string assemblyFile, PlatformTarget platformTarget, string methodName, ILogger outputLogger, bool recordEventDetails = false)
+        public JitRunner(string assemblyFile, JitTarget jitTarget, string methodName, ILogger outputLogger, bool recordEventDetails = false)
         {
             _assemblyFile = assemblyFile;
-            _platformTarget = platformTarget;
+            _jitTarget = jitTarget;
             _methodName = methodName;
             _outputLogger = outputLogger;
             _recordEventDetails = recordEventDetails;
@@ -42,6 +42,9 @@ namespace VsExtension.Shell.Runner
             var dependencyGraph = DependencyGraphBuilder.BuildFromCallGraph(callGraph);
             DependencyResolver resolver = new DependencyResolver(dependencyGraph);
             var methodList = resolver.GetOrderedMethodList();
+
+            if (methodList.Methods.Count == 0)
+                return callGraph;
 
             string methodListFile = SerializeMethodList(methodList);
             try
@@ -69,12 +72,12 @@ namespace VsExtension.Shell.Runner
 
         private JitHostController CreateUnorderedController()
         {
-            return new JitHostController(_assemblyFile, _platformTarget, _methodName, null);
+            return new JitHostController(_assemblyFile, _jitTarget, _methodName, null);
         }
 
         private JitHostController CreateOrderedController(string methodListFile)
         {
-            return new JitHostController(_assemblyFile, _platformTarget, _methodName, methodListFile);
+            return new JitHostController(_assemblyFile, _jitTarget, _methodName, methodListFile);
         }
 
         private AssemblyCallGraph RunJitCompiler(JitHostController jitController)
@@ -83,7 +86,9 @@ namespace VsExtension.Shell.Runner
             {
                 jitController.StartProcess();
                 jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
+                jitController.Process.ErrorDataReceived += JitHostOutputDataReceived;
                 jitController.Process.BeginOutputReadLine();
+                jitController.Process.BeginErrorReadLine();
 
                 etwCollector.StartEventTrace(jitController.Process.Id);
                 jitController.RunJitCompilation();
@@ -98,7 +103,8 @@ namespace VsExtension.Shell.Runner
 
         private void JitHostOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            _outputLogger.WriteText(e.Data);
+            if (!string.IsNullOrWhiteSpace(e.Data))
+                _outputLogger.WriteText(e.Data);
         }
     }
 }

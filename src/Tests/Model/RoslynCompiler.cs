@@ -32,7 +32,7 @@ namespace Tests.Model
 
                 using (var etwCollector = new EtwCollector(true))
                 {
-                    JitHostController jitController = new JitHostController(tempFileName, PlatformTarget.X64, null, null);
+                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, null);
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
                     jitController.Process.BeginOutputReadLine();

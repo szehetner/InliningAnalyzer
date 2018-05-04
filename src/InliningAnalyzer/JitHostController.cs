@@ -12,16 +12,16 @@ namespace InliningAnalyzer
     public class JitHostController
     {
         private readonly string _assemblyFile;
-        private readonly PlatformTarget _platformTarget;
+        private readonly JitTarget _jitTarget;
         private readonly string _methodName;
         private readonly string _methodListFile;
 
         public Process Process { get; private set; }
         
-        public JitHostController(string assemblyFile, PlatformTarget platformTarget, string methodName, string methodListFile)
+        public JitHostController(string assemblyFile, JitTarget jitTarget, string methodName, string methodListFile)
         {
             _assemblyFile = assemblyFile;
-            _platformTarget = platformTarget;
+            _jitTarget = jitTarget;
             _methodName = methodName;
             _methodListFile = methodListFile;
         }
@@ -46,12 +46,28 @@ namespace InliningAnalyzer
                 WindowStyle = ProcessWindowStyle.Hidden,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
             };
             Process = Process.Start(startInfo);
         }
 
         private string BuildArguments()
+        {
+            if (_jitTarget.Runtime == TargetRuntime.NetCore)
+            {
+                string jitHostDll = _jitTarget.Platform == TargetPlatform.X64
+                    ? "JitHost.Core.x64.dll "
+                    : "JitHost.Core.x86.dll ";
+
+                return jitHostDll + BuildRawArguments();
+            }
+
+            return BuildRawArguments();
+        }
+
+        private string BuildRawArguments()
         {
             if (_methodListFile != null)
                 return "\"" + _assemblyFile + "\" /l:\"" + _methodListFile + "\"";
@@ -70,15 +86,73 @@ namespace InliningAnalyzer
 
         private string GetJitHostExe()
         {
-            switch(_platformTarget)
+            if (_jitTarget.Runtime == TargetRuntime.NetCore)
             {
-                case PlatformTarget.X86:
+                var dotnetExecutable = GetDotnetExecutablePath();
+                CheckDotnetExeVersion(dotnetExecutable);
+                return dotnetExecutable;
+            }
+
+            switch (_jitTarget.Platform)
+            {
+                case TargetPlatform.X86:
                     return "JitHost.x86.exe";
-                case PlatformTarget.X64:
+                case TargetPlatform.X64:
                     return "JitHost.x64.exe";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void CheckDotnetExeVersion(string dotnetExecutable)
+        {
+            string versionString;
+            int major;
+            int minor;
+            try
+            {
+                using (var process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = dotnetExecutable,
+                    Arguments = "--version",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }))
+                {
+                    versionString = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    string[] parts = versionString.Trim().Split('.');
+                    if (parts.Length < 2)
+                        return;
+
+                    major = int.Parse(parts[0]);
+                    minor = int.Parse(parts[1]);
+                }
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            if (major < 2 || minor < 1)
+                throw new JitCompilerException(".Net Core 2.1+ is required to run the Inlining Analyzer on .NetCore projects.\r\nCurrent .Net Core Version: " + versionString);
+        }
+
+        private string GetDotnetExecutablePath()
+        {
+            string dotnetExecutable;
+            if (_jitTarget.Platform == TargetPlatform.X64)
+                dotnetExecutable = Environment.ExpandEnvironmentVariables(@"%ProgramW6432%\dotnet\dotnet.exe");
+            else
+                dotnetExecutable = Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\dotnet\dotnet.exe");
+            
+            if (!File.Exists(dotnetExecutable))
+                throw new JitCompilerException($"dotnet.exe could not be found (expected under {dotnetExecutable}).\r\nPlease verify that the correct .Net Core Runtime is installed!");
+
+            return dotnetExecutable;
         }
     }
 }

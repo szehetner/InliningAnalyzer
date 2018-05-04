@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.Model;
 using VsExtension.Shell.Runner;
 using System.Linq;
+using InliningAnalyzer;
 
 namespace Tests.Analyzer
 {
@@ -14,7 +15,7 @@ namespace Tests.Analyzer
         {
             var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.MethodOrdering.cs");
 
-            JitRunner runner = new JitRunner(assemblyFile, InliningAnalyzer.PlatformTarget.X64, null, new ConsoleLogger(), true);
+            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new ConsoleLogger(), true);
             var assemblyCallGraph = runner.Run();
 
             Console.WriteLine("Events:\r\n");
@@ -27,7 +28,7 @@ namespace Tests.Analyzer
         {
             var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.Overloads.cs");
 
-            JitRunner runner = new JitRunner(assemblyFile, InliningAnalyzer.PlatformTarget.X64, null, new ConsoleLogger(), true);
+            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new ConsoleLogger(), true);
             var assemblyCallGraph = runner.Run();
 
             var overloadType = assemblyCallGraph.GetJitType("Tests.Model.Samples.Overloads");

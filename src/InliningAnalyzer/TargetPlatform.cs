@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    public enum PlatformTarget
+    public enum TargetPlatform
     {
         X86,
         X64

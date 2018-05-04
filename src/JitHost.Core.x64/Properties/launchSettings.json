@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JitHost.Core.x64": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\work\\InliningAnalyzer\\Data\\Sample\\CoreConsoleApp\\bin\\Release\\netcoreapp2.0\\CoreConsoleApp.dll\""
+    }
+  }
+}
