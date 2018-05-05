@@ -54,6 +54,10 @@
       <Group guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" priority="0x0600">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="SubMenu"/>
       </Group>
+
+      <Group guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroupOptions" priority="0x0601">
+        <Parent guid="guiInliningAnalyzerPackageCmdSet" id="SubMenu"/>
+      </Group>
     
     <Group guid="guiInliningAnalyzerContextMenuCmdSet" id="TopLevelGroupContext" priority="0x0500">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
@@ -81,13 +85,21 @@
           <ButtonText>Run Inlining Analyzer on Current Project</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guiInliningAnalyzerPackageCmdSet" id="EnableHighlightingId" priority="0x0100" type="Button">
+      <Button guid="guiInliningAnalyzerPackageCmdSet" id="EnableHighlightingId" priority="0x0101" type="Button">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" />
         <CommandFlag>TextChanges</CommandFlag>
         <CommandFlag>DontCache</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Hide Inlining Analyzer Coloring</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guiInliningAnalyzerPackageCmdSet" id="OpenOptionsId" priority="0x0102" type="Button">
+        <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroupOptions" />
+        <Icon guid="guidImages" id="bmpOptions" />
+        <Strings>
+          <ButtonText>Options...</ButtonText>
         </Strings>
       </Button>
     
@@ -107,7 +119,7 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\Icons.png" usedList="bmpPic1, bmpRun"/>
+      <Bitmap guid="guidImages" href="Resources\Icons.png" usedList="bmpAnalyzer, bmpRun, bmpOptions"/>
     </Bitmaps>
   </Commands>
 
@@ -119,7 +131,9 @@
     <GuidSymbol name="guiInliningAnalyzerPackageCmdSet" value="{cbca2c69-1cc0-4b99-aa32-a621c99552e4}">
       <IDSymbol name="EnableHighlightingId" value="0x0100" />
       <IDSymbol name="StartAnalyzerId" value="0x0101" />
+      <IDSymbol name="OpenOptionsId" value="0x0102" />
       <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <IDSymbol name="MyMenuGroupOptions" value="0x1023" />
       <IDSymbol name="SubMenu" value="0x1021"/>
       <IDSymbol name="TopLevelGroup" value="0x1022"/>
     </GuidSymbol>
@@ -130,8 +144,9 @@
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{f0bc6b5b-beea-4a27-a8c4-9175d549e5cb}" >
-      <IDSymbol name="bmpPic1" value="1" />
+      <IDSymbol name="bmpAnalyzer" value="1" />
       <IDSymbol name="bmpRun" value="2" />
+      <IDSymbol name="bmpOptions" value="3" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

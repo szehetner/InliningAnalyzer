@@ -29,6 +29,7 @@ namespace VsExtension
     {
         public const int StartCommandId = 0x0101;
         public const int ToggleCommandId = 0x0100;
+        public const int OpenOptionsCommandId = 0x0102;
         public const int StartSingleMethodCommandId = 0x0131;
         
         /// <summary>
@@ -80,13 +81,14 @@ namespace VsExtension
                 startMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(startMenuItem);
 
-
                 OleMenuCommand menuItem = new OleMenuCommand(ToggleMenuItemCallback, new CommandID(CommandSet, ToggleCommandId));
                 menuItem.BeforeQueryStatus += new EventHandler(OnBeforeQueryStatusToggle);
                 menuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(menuItem);
 
-
+                OleMenuCommand optionsMenuItem = new OleMenuCommand(OpenOptionsCallback, new CommandID(CommandSet, OpenOptionsCommandId));
+                commandService.AddCommand(optionsMenuItem);
+                
                 OleMenuCommand contextMenuItem = new OleMenuCommand(StartSingleMethodMenuItemCallback, new CommandID(CommandSetContextMenu, StartSingleMethodCommandId));
                 contextMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(contextMenuItem);
@@ -163,13 +165,6 @@ namespace VsExtension
             Instance = new InliningAnalyzerCommands(package);
         }
         
-        /// <summary>
-        /// This function is the callback used to execute the command when the menu item is clicked.
-        /// See the constructor to see how the menu item is associated with this function using
-        /// OleMenuCommandService service and MenuCommand class.
-        /// </summary>
-        /// <param name="sender">Event sender.</param>
-        /// <param name="e">Event args.</param>
         private void ToggleMenuItemCallback(object sender, EventArgs e)
         {
             AnalyzerModel.IsHighlightingEnabled = !AnalyzerModel.IsHighlightingEnabled;
@@ -214,7 +209,7 @@ namespace VsExtension
             if (project == null)
                 return;
 
-            var propertyProvider = CreateProjectPropertyProvider(project);
+            var propertyProvider = CreateProjectPropertyProvider(project, PreferredRuntime);
             await propertyProvider.LoadProperties();
 
             try
@@ -239,6 +234,8 @@ namespace VsExtension
                 _outputLogger.WriteText("Build failed.");
                 return;
             }
+
+            _outputLogger.ActivateWindow();
 
             string assemblyFile = GetAssemblyPath(propertyProvider);
             JitTarget jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
@@ -277,10 +274,11 @@ namespace VsExtension
             _statusBarLogger.Clear();
         }
 
-        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project)
+        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project,
+            TargetRuntime preferredRuntime)
         {
             if (IsNewProjectFormat(project))
-                return new CommonProjectPropertyProvider(project);
+                return new CommonProjectPropertyProvider(project, preferredRuntime);
 
             return new LegacyProjectPropertyProvider(project);
         }
@@ -361,6 +359,20 @@ namespace VsExtension
                 OLEMSGICON.OLEMSGICON_CRITICAL,
                 OLEMSGBUTTON.OLEMSGBUTTON_OK,
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+
+        private TargetRuntime PreferredRuntime
+        {
+            get
+            {
+                InliningAnalyzerOptionsPage optionsPage = (InliningAnalyzerOptionsPage) _package.GetDialogPage(typeof(InliningAnalyzerOptionsPage));
+                return optionsPage.PreferredRuntime;
+            }
+        }
+
+        private void OpenOptionsCallback(object sender, EventArgs e)
+        {
+            _package.ShowOptionPage(typeof(InliningAnalyzerOptionsPage));
         }
     }
 }

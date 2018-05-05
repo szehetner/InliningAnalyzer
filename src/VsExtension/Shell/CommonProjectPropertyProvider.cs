@@ -11,13 +11,15 @@ namespace VsExtension.Shell
     public class CommonProjectPropertyProvider : IProjectPropertyProvider
     {
         private readonly Project _project;
+        private readonly TargetRuntime _preferredRuntime;
         private string _outputPath;
         private string _assemblyName;
         private string _targetFramework;
         
-        public CommonProjectPropertyProvider(Project project)
+        public CommonProjectPropertyProvider(Project project, TargetRuntime preferredRuntime)
         {
             _project = project;
+            _preferredRuntime = preferredRuntime;
         }
 
         public async Task LoadProperties()
@@ -48,18 +50,21 @@ namespace VsExtension.Shell
                 return targetFrameworks[0];
             }
 
-            foreach (var targetFramework in targetFrameworks)
-            {
-                if (targetFramework.StartsWith("netstandard") || targetFramework.StartsWith("netcore"))
-                    return targetFramework;
-            }
+            var netStandardTarget = targetFrameworks.FirstOrDefault(t => t.StartsWith("netstandard"));
+            if (netStandardTarget != null)
+                return netStandardTarget;
 
-            foreach (var targetFramework in targetFrameworks)
-            {
-                if (targetFramework.StartsWith("net4"))
-                    return targetFramework;
-            }
+            string preferredTarget = _preferredRuntime == TargetRuntime.NetCore ? "netcore" : "net4";
+            string secondaryTarget = _preferredRuntime == TargetRuntime.NetCore ? "net4" : "netcore";
 
+            var preferred = targetFrameworks.FirstOrDefault(t => t.StartsWith(preferredTarget));
+            if (preferred != null)
+                return preferred;
+
+            var secondary = targetFrameworks.FirstOrDefault(t => t.StartsWith(secondaryTarget));
+            if (secondary != null)
+                return secondary;
+            
             throw new JitCompilerException("No compatible TargetFramework could be determined from the project file. At least one of netstandard*, netcore* or net* is required.");
         }
 
@@ -84,7 +89,10 @@ namespace VsExtension.Shell
         {
             get
             {
-                if (_targetFramework.StartsWith("netstandard") || _targetFramework.StartsWith("netcore"))
+                if (_targetFramework.StartsWith("netstandard"))
+                    return _preferredRuntime;
+
+                if (_targetFramework.StartsWith("netcore"))
                     return TargetRuntime.NetCore;
 
                 return TargetRuntime.NetFramework;

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System.ComponentModel.Composition;
 using VsExtension.Model;
+using VsExtension.Shell;
 
 namespace VsExtension
 {
@@ -19,6 +20,7 @@ namespace VsExtension
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(InliningAnalyzerPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    [ProvideOptionPage(typeof(InliningAnalyzerOptionsPage), "Inlining Analyzer", "General", 0, 0, true)]
     public sealed class InliningAnalyzerPackage : Package
     {
         /// <summary>
