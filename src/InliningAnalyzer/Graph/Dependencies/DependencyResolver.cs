@@ -22,8 +22,8 @@ namespace InliningAnalyzer.Graph.Dependencies
     /// </summary>
     public class DependencyResolver
     {
-        private DependencyGraph _callGraph;
-        private MethodCompilationList _result;
+        private readonly DependencyGraph _callGraph;
+        private readonly MethodCompilationList _result;
 
         public DependencyResolver(DependencyGraph callGraph)
         {

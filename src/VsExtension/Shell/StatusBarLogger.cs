@@ -12,7 +12,7 @@ namespace VsExtension.Shell
     {
         private IServiceProvider _serviceProvider;
 
-        private IVsStatusbar _statusBar;
+        private readonly IVsStatusbar _statusBar;
 
         public StatusBarLogger(Package package)
         {
@@ -30,8 +30,7 @@ namespace VsExtension.Shell
 
         public void SetText(string text)
         {
-            int frozen;
-            _statusBar.IsFrozen(out frozen);
+            _statusBar.IsFrozen(out int frozen);
             if (frozen == 0)
             {
                 _statusBar.SetText(text);

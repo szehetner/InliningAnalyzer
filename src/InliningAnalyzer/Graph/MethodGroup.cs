@@ -39,7 +39,7 @@ namespace InliningAnalyzer
             if (_methods == null)
                 return null;
 
-            return _methods.Where(m => m.Signature == signature).FirstOrDefault();
+            return _methods.FirstOrDefault(m => m.Signature == signature);
         }
 
         public MethodGroup(Method method)

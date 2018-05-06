@@ -1,10 +1,4 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="EnableHighlighting.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -60,10 +54,8 @@ namespace VsExtension
         private InliningAnalyzerCommands(Package package)
         {
             if (package == null)
-            {
                 throw new ArgumentNullException("package");
-            }
-            
+
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             var sp = new ServiceProvider(dte2 as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
             var container = sp.GetService(typeof(Microsoft.VisualStudio.ComponentModelHost.SComponentModel)) as Microsoft.VisualStudio.ComponentModelHost.IComponentModel;
@@ -77,12 +69,12 @@ namespace VsExtension
             if (commandService != null)
             {
                 OleMenuCommand startMenuItem = new OleMenuCommand(StartMenuItemCallback, new CommandID(CommandSet, StartCommandId));
-                startMenuItem.BeforeQueryStatus += new EventHandler(OnBeforeQueryStatusStart);
+                startMenuItem.BeforeQueryStatus += OnBeforeQueryStatusStart;
                 startMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(startMenuItem);
 
                 OleMenuCommand menuItem = new OleMenuCommand(ToggleMenuItemCallback, new CommandID(CommandSet, ToggleCommandId));
-                menuItem.BeforeQueryStatus += new EventHandler(OnBeforeQueryStatusToggle);
+                menuItem.BeforeQueryStatus += OnBeforeQueryStatusToggle;
                 menuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(menuItem);
 
@@ -283,7 +275,7 @@ namespace VsExtension
             return new LegacyProjectPropertyProvider(project);
         }
 
-        private static bool IsNewProjectFormat(EnvDTE.Project vsProject)
+        private static bool IsNewProjectFormat(Project vsProject)
         {
             return vsProject.Kind == "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}";
         }
@@ -336,7 +328,7 @@ namespace VsExtension
             }
             catch (Exception) { }
 
-            OpenFileDialog dialog = new OpenFileDialog()
+            OpenFileDialog dialog = new OpenFileDialog
                                     {
                                         Title = "Select Assembly to analyze",
                                         DefaultExt = "Assembly Files(*.DLL;*.EXE)|*.DLL;*.EXE|All files (*.*)|*.*",
@@ -353,7 +345,7 @@ namespace VsExtension
             string title = "Inlining Analyzer";
 
             VsShellUtilities.ShowMessageBox(
-                this.ServiceProvider,
+                ServiceProvider,
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_CRITICAL,

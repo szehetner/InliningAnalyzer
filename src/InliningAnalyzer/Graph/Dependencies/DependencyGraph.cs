@@ -8,8 +8,8 @@ namespace InliningAnalyzer.Graph.Dependencies
 {
     public class DependencyGraph
     {
-        private HashSet<DependencyMethod> _remainingNonRoots;
-        private HashSet<DependencyMethod> _remainingRoots;
+        private readonly HashSet<DependencyMethod> _remainingNonRoots;
+        private readonly HashSet<DependencyMethod> _remainingRoots;
 
         public bool HasRemainingMethods => _remainingRoots.Count > 0 || _remainingNonRoots.Count > 0;
 
