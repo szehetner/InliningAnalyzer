@@ -50,18 +50,18 @@ namespace VsExtension.Shell
                 return targetFrameworks[0];
             }
 
-            var netStandardTarget = targetFrameworks.FirstOrDefault(t => t.StartsWith("netstandard"));
-            if (netStandardTarget != null)
-                return netStandardTarget;
-
             string preferredTarget = _preferredRuntime == TargetRuntime.NetCore ? "netcore" : "net4";
-            string secondaryTarget = _preferredRuntime == TargetRuntime.NetCore ? "net4" : "netcore";
+            string fallbackTarget = _preferredRuntime == TargetRuntime.NetCore ? "net4" : "netcore";
 
             var preferred = targetFrameworks.FirstOrDefault(t => t.StartsWith(preferredTarget));
             if (preferred != null)
                 return preferred;
 
-            var secondary = targetFrameworks.FirstOrDefault(t => t.StartsWith(secondaryTarget));
+            var netStandardTarget = targetFrameworks.FirstOrDefault(t => t.StartsWith("netstandard"));
+            if (netStandardTarget != null)
+                return netStandardTarget;
+
+            var secondary = targetFrameworks.FirstOrDefault(t => t.StartsWith(fallbackTarget));
             if (secondary != null)
                 return secondary;
             
