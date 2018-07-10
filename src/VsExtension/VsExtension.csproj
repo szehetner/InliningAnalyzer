@@ -54,7 +54,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Classifier\ClassifierProvider.cs" />
-    <Compile Include="Model\MethodNameResolver.cs" />
+    <Compile Include="Model\TargetScopeResolver.cs" />
     <Compile Include="Shell\CommonProjectPropertyProvider.cs" />
     <Compile Include="Shell\InliningAnalyzerCommands.cs" />
     <Compile Include="Shell\InliningAnalyzerPackage.cs" />
