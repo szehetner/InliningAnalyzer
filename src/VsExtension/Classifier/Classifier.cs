@@ -84,7 +84,7 @@ namespace VsExtension
             var snapshot = spans[0].Snapshot;
 
             IEnumerable<ClassifiedSpan> identifiers = GetIdentifiersInSpans(doc.Workspace, doc.SemanticModel, spans);
-
+            
             foreach (var id in identifiers)
             {
                 MethodCall methodCall = null;
@@ -107,20 +107,23 @@ namespace VsExtension
             }
         }
 
+        private static StringComparer _comparer = StringComparer.InvariantCultureIgnoreCase;
+
         private IEnumerable<ClassifiedSpan> GetIdentifiersInSpans(
               Workspace workspace, SemanticModel model,
-              NormalizedSnapshotSpanCollection spans)
+              NormalizedSnapshotSpanCollection snapshotSpans)
         {
-            var comparer = StringComparer.InvariantCultureIgnoreCase;
-            var classifiedSpans =
-              spans.SelectMany(span => {
-                  var textSpan = TextSpan.FromBounds(span.Start, span.End);
-                  return Microsoft.CodeAnalysis.Classification.Classifier.GetClassifiedSpans(model, textSpan, workspace);
-              });
+            foreach (var snapshotSpan in snapshotSpans)
+            {
+                var textSpan = TextSpan.FromBounds(snapshotSpan.Start, snapshotSpan.End);
+                var classifiedSpans = Microsoft.CodeAnalysis.Classification.Classifier.GetClassifiedSpans(model, textSpan, workspace);
 
-            return from cs in classifiedSpans
-                   where comparer.Compare(cs.ClassificationType, "identifier") == 0 || comparer.Compare(cs.ClassificationType, "class name") == 0
-                   select cs;
+                foreach (var classifiedSpan in classifiedSpans)
+                {
+                    if (_comparer.Compare(classifiedSpan.ClassificationType, "operator") != 0 && _comparer.Compare(classifiedSpan.ClassificationType, "keyword") != 0)
+                        yield return classifiedSpan;
+                }
+            }
         }
 
         private void OnTagsChanged()
