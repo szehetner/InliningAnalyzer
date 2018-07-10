@@ -13,16 +13,16 @@ namespace InliningAnalyzer
     {
         private readonly string _assemblyFile;
         private readonly JitTarget _jitTarget;
-        private readonly string _methodName;
+        private readonly TargetScope _targetScope;
         private readonly string _methodListFile;
 
         public Process Process { get; private set; }
         
-        public JitHostController(string assemblyFile, JitTarget jitTarget, string methodName, string methodListFile)
+        public JitHostController(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, string methodListFile)
         {
             _assemblyFile = assemblyFile;
             _jitTarget = jitTarget;
-            _methodName = methodName;
+            _targetScope = targetScope;
             _methodListFile = methodListFile;
         }
 
@@ -72,10 +72,16 @@ namespace InliningAnalyzer
             if (_methodListFile != null)
                 return "\"" + _assemblyFile + "\" /l:\"" + _methodListFile + "\"";
 
-            if (_methodName == null)
+            if (_targetScope == null)
                 return "\"" + _assemblyFile + "\"";
 
-            return "\"" + _assemblyFile + "\" /m:\"" + _methodName + "\"";
+            if (_targetScope.ScopeType == ScopeType.Class)
+                return "\"" + _assemblyFile + "\" /c:\"" + _targetScope.Name + "\"";
+
+            if (_targetScope.ScopeType == ScopeType.Method)
+                return "\"" + _assemblyFile + "\" /m:\"" + _targetScope.Name + "\"";
+
+            throw new InvalidOperationException();
         }
         
         public void RunJitCompilation()

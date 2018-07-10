@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using InliningAnalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System;
@@ -9,14 +10,27 @@ using System.Threading.Tasks;
 
 namespace VsExtension.Model
 {
-    public class MethodNameResolver
+    public class TargetScopeResolver
     {
-        public static string GetMethodName(SemanticModel model, SyntaxTree tree, int line, int column)
+        public static TargetScope GetTargetScope(SemanticModel model, SyntaxTree tree, int line, int column)
         {
             var symbol = GetSymbolByLocation(model, tree, line, column);
             if (symbol == null)
                 return null;
 
+            if (symbol is ITypeSymbol typeSymbol)
+                return GetTypeScope(typeSymbol);
+
+            return GetMethodScope(symbol);
+        }
+
+        private static TargetScope GetTypeScope(ITypeSymbol symbol)
+        {
+            return new TargetScope(ScopeType.Class, symbol.GetFullTypename());
+        }
+
+        private static TargetScope GetMethodScope(ISymbol symbol)
+        {
             var methodSymbol = symbol as IMethodSymbol;
             var propertySymbol = symbol as IPropertySymbol;
 
@@ -36,7 +50,7 @@ namespace VsExtension.Model
             builder.Append(string.Join(",", parameters.Select(p => p.Type.GetFullTypename(";", true))));
             builder.Append(")");
 
-            return builder.ToString();
+            return new TargetScope(ScopeType.Method, builder.ToString());
         }
 
         public static ISymbol GetSymbolByLocation(SemanticModel model, SyntaxTree tree, int line, int column)
@@ -50,10 +64,16 @@ namespace VsExtension.Model
                                                     || n.IsKind(SyntaxKind.GetAccessorDeclaration)
                                                     || n.IsKind(SyntaxKind.SetAccessorDeclaration)
                                                     || n.IsKind(SyntaxKind.IndexerDeclaration));
-            if (methodNode == null)
-                return null;
+            if (methodNode != null)
+                return model.GetDeclaredSymbol(methodNode);
 
-            return model.GetDeclaredSymbol(methodNode);
+            var classNode = nodes.FirstOrDefault(n => n.IsKind(SyntaxKind.ClassDeclaration)
+                                                   || n.IsKind(SyntaxKind.StructDeclaration));
+
+            if (classNode != null)
+                return model.GetDeclaredSymbol(classNode);
+
+            return null;
         }
     }
 }

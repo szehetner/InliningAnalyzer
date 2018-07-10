@@ -10,16 +10,21 @@ namespace InliningAnalyzer
 {
     public class UnorderedMethodProvider : IMethodProvider
     {
-        private readonly Assembly _assembly;
+        protected readonly Assembly _assembly;
 
         public UnorderedMethodProvider(Assembly assembly)
         {
             _assembly = assembly;
         }
 
+        protected virtual IEnumerable<Type> GetTypes()
+        {
+            return _assembly.GetTypes();
+        }
+
         public IEnumerable<MethodBase> GetMethods()
         {
-            Type[] types = _assembly.GetTypes();
+            var types = GetTypes();
             foreach (Type type in types)
             {
                 if (IsIgnored(type))

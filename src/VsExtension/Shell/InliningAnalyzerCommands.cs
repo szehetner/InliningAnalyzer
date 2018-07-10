@@ -24,7 +24,7 @@ namespace VsExtension
         public const int StartCommandId = 0x0101;
         public const int ToggleCommandId = 0x0100;
         public const int OpenOptionsCommandId = 0x0102;
-        public const int StartSingleMethodCommandId = 0x0131;
+        public const int StartForScopeCommandId = 0x0131;
         
         /// <summary>
         /// Command menu group (command set GUID).
@@ -81,7 +81,7 @@ namespace VsExtension
                 OleMenuCommand optionsMenuItem = new OleMenuCommand(OpenOptionsCallback, new CommandID(CommandSet, OpenOptionsCommandId));
                 commandService.AddCommand(optionsMenuItem);
                 
-                OleMenuCommand contextMenuItem = new OleMenuCommand(StartSingleMethodMenuItemCallback, new CommandID(CommandSetContextMenu, StartSingleMethodCommandId));
+                OleMenuCommand contextMenuItem = new OleMenuCommand(StartForScopeMenuItemCallback, new CommandID(CommandSetContextMenu, StartForScopeCommandId));
                 contextMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(contextMenuItem);
             }
@@ -162,7 +162,7 @@ namespace VsExtension
             AnalyzerModel.IsHighlightingEnabled = !AnalyzerModel.IsHighlightingEnabled;
         }
         
-        private async void StartSingleMethodMenuItemCallback(object sender, EventArgs e)
+        private async void StartForScopeMenuItemCallback(object sender, EventArgs e)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
@@ -179,14 +179,14 @@ namespace VsExtension
             var semanticModel = await document.GetSemanticModelAsync();
             var syntaxTree = await document.GetSyntaxTreeAsync();
 
-            string methodName = MethodNameResolver.GetMethodName(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
-            if (methodName == null)
+            TargetScope targetScope = TargetScopeResolver.GetTargetScope(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
+            if (targetScope == null)
             {
-                ShowError("Could not determine selected Method.");
+                ShowError("Could not determine selected Scope (Method or Class).");
                 return;
             }
 
-            await RunAnalyzer(methodName);
+            await RunAnalyzer(targetScope);
         }
         
         private async void StartMenuItemCallback(object sender, EventArgs e)
@@ -194,7 +194,7 @@ namespace VsExtension
             await RunAnalyzer(null);
         }
         
-        private async Task RunAnalyzer(string methodName)
+        private async Task RunAnalyzer(TargetScope targetScope)
         {
             var dte2 = (DTE2) Package.GetGlobalService(typeof(SDTE));
             var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
@@ -239,15 +239,16 @@ namespace VsExtension
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
             _outputLogger.WriteText("Platform: " + jitTarget.Platform);
-            if (methodName == null)
-                _outputLogger.WriteText("Method: All");
+            if (targetScope == null)
+                _outputLogger.WriteText("Scope: All Types and Methods");
             else
-                _outputLogger.WriteText("Method: " + methodName);
+                _outputLogger.WriteText($"Scope ({targetScope.ScopeType}): {targetScope.Name}");
+
             _outputLogger.WriteText("");
 
             try
             {
-                var runner = new JitRunner(assemblyFile, jitTarget, methodName, _outputLogger);
+                var runner = new JitRunner(assemblyFile, jitTarget, targetScope, _outputLogger);
                 AnalyzerModel.CallGraph = runner.Run();
 
                 _outputLogger.WriteText("Finished Inlining Analyzer");

@@ -15,17 +15,17 @@ namespace VsExtension.Shell.Runner
     {
         private readonly string _assemblyFile;
         private readonly JitTarget _jitTarget;
-        private readonly string _methodName;
+        private readonly TargetScope _targetScope;
         private readonly ILogger _outputLogger;
         private readonly bool _recordEventDetails;
 
         public AssemblyCallGraph UnorderedCallGraph { get; set; }
 
-        public JitRunner(string assemblyFile, JitTarget jitTarget, string methodName, ILogger outputLogger, bool recordEventDetails = false)
+        public JitRunner(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, ILogger outputLogger, bool recordEventDetails = false)
         {
             _assemblyFile = assemblyFile;
             _jitTarget = jitTarget;
-            _methodName = methodName;
+            _targetScope = targetScope;
             _outputLogger = outputLogger;
             _recordEventDetails = recordEventDetails;
         }
@@ -36,7 +36,7 @@ namespace VsExtension.Shell.Runner
             if (_recordEventDetails)
                 UnorderedCallGraph = callGraph;
 
-            if (_methodName != null)
+            if (_targetScope != null && _targetScope.ScopeType == ScopeType.Method)
                 return callGraph;
 
             var dependencyGraph = DependencyGraphBuilder.BuildFromCallGraph(callGraph);
@@ -72,12 +72,12 @@ namespace VsExtension.Shell.Runner
 
         private JitHostController CreateUnorderedController()
         {
-            return new JitHostController(_assemblyFile, _jitTarget, _methodName, null);
+            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, null);
         }
 
         private JitHostController CreateOrderedController(string methodListFile)
         {
-            return new JitHostController(_assemblyFile, _jitTarget, _methodName, methodListFile);
+            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, methodListFile);
         }
 
         private AssemblyCallGraph RunJitCompiler(JitHostController jitController)

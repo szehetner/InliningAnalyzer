@@ -4,14 +4,15 @@ using Microsoft.CodeAnalysis.CSharp;
 using VsExtension.Model;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using InliningAnalyzer;
 
 namespace Tests.Model
 {
     [TestClass]
-    public class MethodNameResolverTest
+    public class TargetScopeResolverTest
     {
         [TestMethod]
-        public void TestGetSymbolByLocation()
+        public void TestGetSymbolByLocation_Methods()
         {
             string source = 
 @"namespace Test
@@ -22,6 +23,8 @@ namespace Tests.Model
         {
             return true;
         }
+
+        private int _member;
     }
 }
 ";
@@ -29,17 +32,21 @@ namespace Tests.Model
             
             var methodSymbol = model.SyntaxTree.GetRoot().DescendantNodes().Select(n => model.GetDeclaredSymbol(n)).First(s => s != null && s.Kind == SymbolKind.Method);
 
-            Assert.AreNotEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 4, 0));
-            Assert.AreEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 0));
-            Assert.AreEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 25));
-            Assert.AreEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 37));
-            Assert.AreEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 7, 0));
-            Assert.AreEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 8, 0));
-            Assert.AreNotEqual(methodSymbol, MethodNameResolver.GetSymbolByLocation(model, model.SyntaxTree, 9, 0));
+            Assert.AreNotEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 4, 0));
+            Assert.AreEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 0));
+            Assert.AreEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 25));
+            Assert.AreEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 5, 37));
+            Assert.AreEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 7, 0));
+            Assert.AreEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 8, 0));
+            Assert.AreNotEqual(methodSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 9, 0));
+
+            var classSymbol = model.SyntaxTree.GetRoot().DescendantNodes().Select(n => model.GetDeclaredSymbol(n)).First(s => s != null && s.Kind == SymbolKind.NamedType);
+            Assert.AreEqual(classSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 9, 0));
+            Assert.AreEqual(classSymbol, TargetScopeResolver.GetSymbolByLocation(model, model.SyntaxTree, 10, 10));
         }
 
         [TestMethod]
-        public void TestGetMethodName()
+        public void TestGetTargetScope()
         {
             string source =
 @"using System.Collections.Generic; using System;
@@ -85,32 +92,47 @@ namespace Test
     {
         int this[int i] { get; }
     }
+
+    public class TestClass4
+    {
+    }
+
+    public struct TestStruct
+    {
+    }
 }
 ";
             var model = RoslynCompiler.GetSemanticModel(source);
             
-            Assert.AreEqual("Test.TestClass|Method1()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 6, 0));
-            Assert.AreEqual("Test.TestClass|Method2(System.Int32)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 7, 0));
-            Assert.AreEqual("Test.TestClass|Method2(System.String)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 8, 0));
-            Assert.AreEqual("Test.TestClass|Method2(System.Int32,System.String)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 9, 0));
-            Assert.AreEqual("Test.TestClass|Method3(Test.TestClass)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 10, 0));
-            Assert.AreEqual("Test.TestClass|Method4(System.Int32[])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 11, 0));
-            Assert.AreEqual("Test.TestClass|Method5(System.Collections.Generic.List`1[System.String])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 12, 0));
-            Assert.AreEqual("Test.TestClass|Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 13, 0));
+            Assert.AreEqual("Test.TestClass|Method1()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 6, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method2(System.Int32)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 7, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method2(System.String)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 8, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method2(System.Int32,System.String)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 9, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method3(Test.TestClass)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 10, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method4(System.Int32[])", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 11, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method5(System.Collections.Generic.List`1[System.String])", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 12, 0).Name);
+            Assert.AreEqual("Test.TestClass|Method6(System.Collections.Generic.Dictionary`2[System.DateTime;System.Boolean])", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 13, 0).Name);
 
-            Assert.AreEqual("Test.TestClass|ctor()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 15, 0));
-            Assert.AreEqual("Test.TestClass|ctor(System.Int32)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 16, 0));
+            Assert.AreEqual("Test.TestClass|ctor()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 15, 0).Name);
+            Assert.AreEqual("Test.TestClass|ctor(System.Int32)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 16, 0).Name);
 
-            Assert.AreEqual("Test.TestClass|get_Name()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 20, 0));
-            Assert.AreEqual("Test.TestClass|set_Name(System.String)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 21, 0));
+            Assert.AreEqual("Test.TestClass|get_Name()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 20, 0).Name);
+            Assert.AreEqual("Test.TestClass|set_Name(System.String)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 21, 0).Name);
 
-            Assert.AreEqual("Test.TestClass|Dispose()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 24, 0));
-            Assert.AreEqual("Test.TestClass|BaseTest()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 25, 0));
-            Assert.AreEqual("Test.TestClass2|BaseTest()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 30, 0));
-            Assert.AreEqual("Test.TestClass3|System.IDisposable.Dispose()", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 35, 0));
+            Assert.AreEqual("Test.TestClass|Dispose()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 24, 0).Name);
+            Assert.AreEqual("Test.TestClass|BaseTest()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 25, 0).Name);
+            Assert.AreEqual("Test.TestClass2|BaseTest()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 30, 0).Name);
+            Assert.AreEqual("Test.TestClass3|System.IDisposable.Dispose()", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 35, 0).Name);
 
-            Assert.AreEqual("Test.TestClass3|get_Item(System.String)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 36, 0));
-            Assert.AreEqual("Test.TestClass3|Test.IIndexer.get_Item(System.Int32)", MethodNameResolver.GetMethodName(model, model.SyntaxTree, 37, 0));
+            Assert.AreEqual("Test.TestClass3|get_Item(System.String)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 36, 0).Name);
+            Assert.AreEqual("Test.TestClass3|Test.IIndexer.get_Item(System.Int32)", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 37, 0).Name);
+
+            Assert.AreEqual("Test.TestClass4", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 46, 0).Name);
+            Assert.AreEqual(ScopeType.Class, TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 46, 0).ScopeType);
+
+            Assert.AreEqual("Test.TestStruct", TargetScopeResolver.GetTargetScope(model, model.SyntaxTree, 50, 0).Name);
+
+
         }
     }
 }

@@ -26,6 +26,10 @@ namespace InliningAnalyzer
                 {
                     methodProvider = new SingleMethodProvider(assembly, args[1].Substring(3).Trim('"'));
                 }
+                else if (args[1].StartsWith("/c:"))
+                {
+                    methodProvider = new TypeMethodProvider(assembly, args[1].Substring(3).Trim('"'));
+                }
                 else if (args[1].StartsWith("/l:"))
                 {
                     methodProvider = new OrderedMethodProvider(assembly, args[1].Substring(3).Trim('"'));

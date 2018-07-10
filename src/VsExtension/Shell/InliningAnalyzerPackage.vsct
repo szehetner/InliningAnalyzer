@@ -107,7 +107,7 @@
         <Parent guid="guiInliningAnalyzerContextMenuCmdSet" id="TopLevelGroupContext" />
         <Icon guid="guidImages" id="bmpRun" />
         <Strings>
-          <ButtonText>Run Inlining Analyzer on Current Method</ButtonText>
+          <ButtonText>Run Inlining Analyzer on Current Scope</ButtonText>
         </Strings>
       </Button>
     </Buttons>
