@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InliningAnalyzer.Graph.Dependencies
+namespace InliningAnalyzer.JitCompiler
 {
     [ProtoContract]
     public class MethodCompilationList
@@ -17,11 +17,6 @@ namespace InliningAnalyzer.Graph.Dependencies
         public MethodCompilationList()
         {
             Methods = new List<MethodCompilationListItem>();
-        }
-
-        internal void Add(DependencyMethod method)
-        {
-            Methods.Add(new MethodCompilationListItem(method));
         }
     }
 
@@ -40,13 +35,6 @@ namespace InliningAnalyzer.Graph.Dependencies
 
         public MethodCompilationListItem()
         {
-        }
-
-        public MethodCompilationListItem(DependencyMethod dependencyMethod)
-        {
-            FullTypeName = dependencyMethod.FullTypename;
-            MethodName = dependencyMethod.MethodName;
-            Signature = dependencyMethod.Signature;
         }
     }
 }

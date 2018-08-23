@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace InliningAnalyzer
 {
@@ -16,7 +17,14 @@ namespace InliningAnalyzer
         private const int EVENTID_JITTING_STARTED = 145;
         private const int EVENTID_INLINING_SUCCEEDED = 185;
         private const int EVENTID_INLINING_FAILED = 186;
+        private const int EVENTID_INLINING_FAILEDANSI = 189;
 
+        public const string EVENTSOURCENAME = "InliningAnalyzerSource";
+        private const int EVENTID_START_COMPILERRUN = 1;
+        private const int EVENTID_STOP_COMPILERRUN = 2;
+        private const int EVENTID_ASYNCMETHOD_START = 3;
+        private const int EVENTID_ASYNCMETHOD_STOP = 4;
+        
         private readonly AssemblyCallGraph _assemblyCallGraph;
         private TraceEventSession _session;
 
@@ -46,6 +54,7 @@ namespace InliningAnalyzer
             
             _session.Source.Clr.MethodInliningSucceeded += Clr_MethodInliningSucceeded;
             _session.Source.Clr.MethodInliningFailed += Clr_MethodInliningFailed;
+            _session.Source.Clr.MethodInliningFailedAnsi += Clr_MethodInliningFailedAnsi;
             _session.Source.Clr.MethodJittingStarted += Clr_MethodJittingStarted;
             _session.Source.Dynamic.All += Dynamic_All;
             
@@ -53,9 +62,9 @@ namespace InliningAnalyzer
                                         new TraceEventProviderOptions
                                         {
                                             ProcessIDFilter = new List<int> { processId },
-                                            EventIDsToEnable = new List<int> { EVENTID_JITTING_STARTED, EVENTID_INLINING_SUCCEEDED, EVENTID_INLINING_FAILED }
+                                            EventIDsToEnable = new List<int> { EVENTID_JITTING_STARTED, EVENTID_INLINING_SUCCEEDED, EVENTID_INLINING_FAILED, EVENTID_INLINING_FAILEDANSI }
                                         });
-            _session.EnableProvider(InliningAnalyzerSource.EventSourceName, TraceEventLevel.Informational, options:
+            _session.EnableProvider(EVENTSOURCENAME, TraceEventLevel.Informational, options:
                                         new TraceEventProviderOptions
                                         {
                                             ProcessIDFilter = new List<int> { processId }
@@ -63,7 +72,7 @@ namespace InliningAnalyzer
 
             Task.Run(() => _session.Source.Process());
         }
-        
+
         public void StopEventTrace()
         {
             _session.Flush();
@@ -84,23 +93,23 @@ namespace InliningAnalyzer
 
         private void Dynamic_All(TraceEvent traceEvent)
         {
-            if (traceEvent.ProviderName != InliningAnalyzerSource.EventSourceName)
+            if (traceEvent.ProviderName != EVENTSOURCENAME)
                 return;
 
-            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.StartCompilerRun)
+            if ((int)traceEvent.ID == EVENTID_START_COMPILERRUN)
             {
                 _isEnabled = true;
             }
-            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.StopCompilerRun)
+            if ((int)traceEvent.ID == EVENTID_STOP_COMPILERRUN)
             {
                 _isEnabled = false;
                 _isFinished.Set();
             }
-            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.AsyncMethodStart)
+            if ((int)traceEvent.ID == EVENTID_ASYNCMETHOD_START)
             {
                 _currentAsyncMethod = _lastMethod;
             }
-            if ((int)traceEvent.ID == InliningAnalyzerSource.EventId.AsyncMethodStop)
+            if ((int)traceEvent.ID == EVENTID_ASYNCMETHOD_STOP)
             {
                 _currentAsyncMethod = null;
             }
@@ -124,6 +133,36 @@ namespace InliningAnalyzer
                     IsInlined = false,
                     FailReason = data.FailReason
                 };
+            inlinerMethod.MethodCalls.Add(methodCall);
+            calledMethod.CalledBy.Add(methodCall);
+
+            if (data.FailAlways)
+                calledMethod.InlineFailsAlways = true;
+
+            if (_recordEventDetails)
+                _assemblyCallGraph.EventDetails.Add(new InliningEvent(data));
+
+            _lastMethod = inlinerMethod;
+        }
+
+        private void Clr_MethodInliningFailedAnsi(MethodJitInliningFailedAnsiTraceData data)
+        {
+            if (!_isEnabled)
+                return;
+
+            var inlinerMethod = _assemblyCallGraph.GetOrAddMethod(data.InlinerNamespace, data.InlinerName, data.InlinerNameSignature);
+            if (_currentAsyncMethod != null)
+                inlinerMethod = _currentAsyncMethod;
+
+            var calledMethod = _assemblyCallGraph.GetOrAddMethod(data.InlineeNamespace, data.InlineeName, data.InlineeNameSignature);
+
+            var methodCall = new MethodCall
+            {
+                Source = inlinerMethod,
+                Target = calledMethod,
+                IsInlined = false,
+                FailReason = data.FailReason
+            };
             inlinerMethod.MethodCalls.Add(methodCall);
             calledMethod.CalledBy.Add(methodCall);
 

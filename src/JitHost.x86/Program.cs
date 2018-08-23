@@ -12,7 +12,7 @@ namespace JitHost.x86
         static void Main(string[] args)
         {
             Console.ReadLine();
-            JitCompiler compiler = JitCompilerFactory.Create(args);
+            JitCompilerHost compiler = JitCompilerFactory.Create(args);
             compiler.PreJITMethods();
         }
     }

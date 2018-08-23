@@ -32,6 +32,19 @@ namespace InliningAnalyzer
             FailAlways = data.FailAlways;
         }
 
+        public InliningEvent(MethodJitInliningFailedAnsiTraceData data)
+        {
+            Succeeded = false;
+            InlinerNamespace = data.InlinerNamespace;
+            InlinerName = data.InlinerName;
+            InlinerNameSignature = data.InlinerNameSignature;
+            InlineeNamespace = data.InlineeNamespace;
+            InlineeName = data.InlineeName;
+            InlineeNameSignature = data.InlineeNameSignature;
+            FailReason = data.FailReason;
+            FailAlways = data.FailAlways;
+        }
+
         public InliningEvent(MethodJitInliningSucceededTraceData data)
         {
             Succeeded = true;

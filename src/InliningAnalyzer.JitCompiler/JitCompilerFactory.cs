@@ -10,7 +10,7 @@ namespace InliningAnalyzer
 {
     public static class JitCompilerFactory
     {
-        public static JitCompiler Create(string[] args)
+        public static JitCompilerHost Create(string[] args)
         {
             if (args.Length == 0)
                 throw new ArgumentOutOfRangeException("Expected arg contents: assemblyFile and optional method name or method list");
@@ -43,7 +43,7 @@ namespace InliningAnalyzer
             {
                 methodProvider = new UnorderedMethodProvider(assembly);
             }
-            return new JitCompiler(assemblyPath, methodProvider);
+            return new JitCompilerHost(assemblyPath, methodProvider);
         }
     }
 }

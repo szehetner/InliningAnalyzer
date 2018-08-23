@@ -5,8 +5,17 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\InliningAnalyzer\InliningAnalyzer.csproj" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+    <PackageReference Include="System.Runtime" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InliningAnalyzer.JitCompiler\InliningAnalyzer.JitCompiler.csproj" />
   </ItemGroup>
 
 </Project>

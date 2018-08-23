@@ -13,7 +13,7 @@ namespace VsExtension
     internal static class ClassificationTypes
     {
         // This disables "The field is never used" compiler's warning. Justification: the field is used by MEF.
-#pragma warning disable 169
+#pragma warning disable CS0649
 
         [Export(typeof(ClassificationTypeDefinition))]
         [Name("InlineSucceeded")]
@@ -23,6 +23,6 @@ namespace VsExtension
         [Name("InlineFailed")]
         internal static ClassificationTypeDefinition InlineFailedType;
 
-#pragma warning restore 169
+#pragma warning restore CS0649
     }
 }

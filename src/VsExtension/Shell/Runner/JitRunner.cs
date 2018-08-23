@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InliningAnalyzer.Collector;
 
 namespace VsExtension.Shell.Runner
 {
@@ -17,16 +18,18 @@ namespace VsExtension.Shell.Runner
         private readonly JitTarget _jitTarget;
         private readonly TargetScope _targetScope;
         private readonly ILogger _outputLogger;
+        private readonly IJitHostPathResolver _pathResolver;
         private readonly bool _recordEventDetails;
 
         public AssemblyCallGraph UnorderedCallGraph { get; set; }
 
-        public JitRunner(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, ILogger outputLogger, bool recordEventDetails = false)
+        public JitRunner(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, ILogger outputLogger, IJitHostPathResolver pathResolver, bool recordEventDetails = false)
         {
             _assemblyFile = assemblyFile;
             _jitTarget = jitTarget;
             _targetScope = targetScope;
             _outputLogger = outputLogger;
+            _pathResolver = pathResolver;
             _recordEventDetails = recordEventDetails;
         }
 
@@ -72,12 +75,12 @@ namespace VsExtension.Shell.Runner
 
         private JitHostController CreateUnorderedController()
         {
-            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, null);
+            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, null, _pathResolver);
         }
 
         private JitHostController CreateOrderedController(string methodListFile)
         {
-            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, methodListFile);
+            return new JitHostController(_assemblyFile, _jitTarget, _targetScope, methodListFile, _pathResolver);
         }
 
         private AssemblyCallGraph RunJitCompiler(JitHostController jitController)
@@ -95,6 +98,7 @@ namespace VsExtension.Shell.Runner
                 etwCollector.StopEventTrace();
 
                 jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
+                jitController.Process.ErrorDataReceived -= JitHostOutputDataReceived;
 
                 CallGraphPostProcessor.Process(etwCollector.AssemblyCallGraph);
                 return etwCollector.AssemblyCallGraph;

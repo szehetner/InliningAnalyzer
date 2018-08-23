@@ -50,10 +50,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InliningAnalyzer\InliningAnalyzer.csproj">
-      <Project>{1E257E63-39D6-4B49-82A7-8CBF65A136F5}</Project>
-      <Name>InliningAnalyzer</Name>
+    <ProjectReference Include="..\InliningAnalyzer.JitCompiler\InliningAnalyzer.JitCompiler.csproj">
+      <Project>{9FE584E8-4DAD-4268-8246-6C55F8CAF033}</Project>
+      <Name>InliningAnalyzer.JitCompiler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="protobuf-net">
+      <Version>2.3.17</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

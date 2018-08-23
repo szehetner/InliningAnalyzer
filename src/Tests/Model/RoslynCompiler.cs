@@ -32,9 +32,11 @@ namespace Tests.Model
 
                 using (var etwCollector = new EtwCollector(true))
                 {
-                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, null);
+                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, null, new TestJitPathResolver());
+                    
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
+                    jitController.Process.ErrorDataReceived += JitHostOutputDataReceived;
                     jitController.Process.BeginOutputReadLine();
 
                     etwCollector.StartEventTrace(jitController.Process.Id);
@@ -42,6 +44,7 @@ namespace Tests.Model
                     etwCollector.StopEventTrace();
 
                     jitController.Process.OutputDataReceived -= JitHostOutputDataReceived;
+                    jitController.Process.ErrorDataReceived -= JitHostOutputDataReceived;
 
                     CallGraphPostProcessor.Process(etwCollector.AssemblyCallGraph);
                     return (compilation.GetSemanticModel(tree), etwCollector.AssemblyCallGraph);
@@ -110,6 +113,14 @@ namespace Tests.Model
                 StreamReader reader = new StreamReader(stream);
                 return reader.ReadToEnd();
             }
+        }
+    }
+
+    public class TestJitPathResolver : IJitHostPathResolver
+    {
+        public string GetPath(TargetRuntime targetRuntime)
+        {
+            return ".";
         }
     }
 }

@@ -54,9 +54,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InliningAnalyzer\InliningAnalyzer.csproj">
-      <Project>{1e257e63-39d6-4b49-82a7-8cbf65a136f5}</Project>
-      <Name>InliningAnalyzer</Name>
+    <ProjectReference Include="..\InliningAnalyzer.Collector\InliningAnalyzer.Collector.csproj">
+      <Project>{18724332-004E-475D-8DFD-69580953A1A3}</Project>
+      <Name>InliningAnalyzer.Collector</Name>
     </ProjectReference>
     <ProjectReference Include="..\JitHost.x64\JitHost.x64.csproj">
       <Project>{7e6d49be-cf2b-4184-93f6-22b627ccf119}</Project>

@@ -11,9 +11,16 @@ namespace JitHost.x64
     {
         static void Main(string[] args)
         {
-            Console.ReadLine();
-            JitCompiler compiler = JitCompilerFactory.Create(args);
-            compiler.PreJITMethods();
+            try
+            {
+                Console.ReadLine();
+                JitCompilerHost compiler = JitCompilerFactory.Create(args);
+                compiler.PreJITMethods();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

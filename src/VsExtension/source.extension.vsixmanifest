@@ -23,7 +23,5 @@
     <Assets>
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="JitHost.x64" Path="|JitHost.x64|" AssemblyName="|JitHost.x64;AssemblyName|" />
-        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="JitHost.x86" Path="|JitHost.x86|" AssemblyName="|JitHost.x86;AssemblyName|" />
     </Assets>
 </PackageManifest>

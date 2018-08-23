@@ -15,15 +15,17 @@ namespace InliningAnalyzer
         private readonly JitTarget _jitTarget;
         private readonly TargetScope _targetScope;
         private readonly string _methodListFile;
-
+        private readonly IJitHostPathResolver _pathResolver;
+        
         public Process Process { get; private set; }
         
-        public JitHostController(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, string methodListFile)
+        public JitHostController(string assemblyFile, JitTarget jitTarget, TargetScope targetScope, string methodListFile, IJitHostPathResolver pathResolver)
         {
             _assemblyFile = assemblyFile;
             _jitTarget = jitTarget;
             _targetScope = targetScope;
             _methodListFile = methodListFile;
+            _pathResolver = pathResolver;
         }
 
         private string GetJitHostExePath()
@@ -58,10 +60,10 @@ namespace InliningAnalyzer
             if (_jitTarget.Runtime == TargetRuntime.NetCore)
             {
                 string jitHostDll = _jitTarget.Platform == TargetPlatform.X64
-                    ? "JitHost.Core.x64.dll "
-                    : "JitHost.Core.x86.dll ";
+                    ? Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.Core.x64.dll")
+                    : Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.Core.x86.dll");
 
-                return jitHostDll + BuildRawArguments();
+                return jitHostDll + " " + BuildRawArguments();
             }
 
             return BuildRawArguments();
@@ -98,13 +100,13 @@ namespace InliningAnalyzer
                 CheckDotnetExeVersion(dotnetExecutable);
                 return dotnetExecutable;
             }
-
+            
             switch (_jitTarget.Platform)
             {
                 case TargetPlatform.X86:
-                    return "JitHost.x86.exe";
+                    return Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.x86.exe");
                 case TargetPlatform.X64:
-                    return "JitHost.x64.exe";
+                    return Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.x64.exe");
                 default:
                     throw new ArgumentOutOfRangeException();
             }

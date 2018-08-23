@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InliningAnalyzer.Collector;
 
 namespace InliningAnalyzer.Graph.Dependencies
 {
@@ -69,7 +70,7 @@ namespace InliningAnalyzer.Graph.Dependencies
             if (!_callGraph.Contains(method))
                 return; // has already been added to result / removed from graph
 
-            _result.Add(method);
+            AddToResult(method);
             method.RemoveFromGraph();
 
             // depth first search if callers remain (if not -> recursive remove + search)
@@ -78,6 +79,17 @@ namespace InliningAnalyzer.Graph.Dependencies
                 if (child.IsRoot)
                     AddToResultList(child);
             }
+        }
+
+        internal void AddToResult(DependencyMethod method)
+        {
+            _result.Methods.Add(new MethodCompilationListItem
+                {
+                    FullTypeName = method.FullTypename,
+                    MethodName = method.MethodName,
+                    Signature = method.Signature
+                }
+                );
         }
     }
 }

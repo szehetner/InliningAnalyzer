@@ -31,7 +31,14 @@ namespace Tests.Model.Samples
 
             private int Test2()
             {
-                return 1;
+                try
+                {
+                    return 1;
+                }
+                catch (Exception ex)
+                {
+                    return 2;
+                }
             }
         }
     }

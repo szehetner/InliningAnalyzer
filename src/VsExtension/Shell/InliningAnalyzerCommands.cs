@@ -40,12 +40,17 @@ namespace VsExtension
         private OutputWindowLogger _outputLogger;
         private StatusBarLogger _statusBarLogger;
 
+        // This disables "The field is never used" compiler's warning. Justification: the field is used by MEF.
+#pragma warning disable CS0649
+
         [Import]
         internal IAnalyzerModel AnalyzerModel;
 
         [Import]
         internal VisualStudioWorkspace Workspace;
-        
+
+#pragma warning restore CS0649
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InliningAnalyzerCommands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -248,7 +253,7 @@ namespace VsExtension
 
             try
             {
-                var runner = new JitRunner(assemblyFile, jitTarget, targetScope, _outputLogger);
+                var runner = new JitRunner(assemblyFile, jitTarget, targetScope, _outputLogger, new JitHostPathResolver());
                 AnalyzerModel.CallGraph = runner.Run();
 
                 _outputLogger.WriteText("Finished Inlining Analyzer");

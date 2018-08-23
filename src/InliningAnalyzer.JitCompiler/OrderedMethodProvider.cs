@@ -1,5 +1,4 @@
-﻿using InliningAnalyzer.Graph.Dependencies;
-using ProtoBuf;
+﻿using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using InliningAnalyzer.JitCompiler;
 
 namespace InliningAnalyzer
 {

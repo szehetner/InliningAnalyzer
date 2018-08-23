@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace InliningAnalyzer
 {
-    public class JitCompiler
+    public class JitCompilerHost
     {
         private readonly string _assemblyPath;
         private readonly IMethodProvider _methodProvider;
 
-        public JitCompiler(string assemblyPath, IMethodProvider methodProvider)
+        public JitCompilerHost(string assemblyPath, IMethodProvider methodProvider)
         {
             _assemblyPath = assemblyPath;
             _methodProvider = methodProvider;
@@ -39,8 +39,32 @@ namespace InliningAnalyzer
 
         public void PreJITMethods()
         {
-            InliningAnalyzerSource.Log.StartCompilerRun();
+            try
+            {
+                InliningAnalyzerSource.Log.StartCompilerRun();
 
+                CompileMethods();
+            }
+            catch(ReflectionTypeLoadException ex)
+            {
+                foreach (var loaderException in ex.LoaderExceptions)
+                {
+                    Console.WriteLine(loaderException.ToString());
+                    Console.WriteLine();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                InliningAnalyzerSource.Log.StopCompilerRun();
+            }
+        }
+
+        private void CompileMethods()
+        {
             foreach (MethodBase method in _methodProvider.GetMethods())
             {
                 try
@@ -60,13 +84,36 @@ namespace InliningAnalyzer
                     Console.WriteLine(method.DeclaringType.Name + "." + method.Name + ":" + ex.Message);
                 }
             }
-            
-            InliningAnalyzerSource.Log.StopCompilerRun();
         }
 
         private static void CompileSyncMethod(MethodBase method)
         {
-            RuntimeHelpers.PrepareMethod(method.MethodHandle);
+            if (!method.ContainsGenericParameters)
+            {
+                RuntimeHelpers.PrepareMethod(method.MethodHandle);
+            }
+            else
+            {
+                //var typeParameters = method.DeclaringType
+                //    .GetGenericArguments()
+                //    .Select(t => t.TypeHandle)
+                //    .Concat(
+                //        method
+                //            .GetParameters()
+                //            .Where(p => p.ParameterType.IsGenericParameter)
+                //            .Select(p => typeof(object).TypeHandle))
+                //    .ToArray();
+
+                //RuntimeTypeHandle[] parameters = method
+                //    .GetParameters()
+                //    .Where(p => p.ParameterType.IsGenericParameter)
+                //    .Select(p => typeof(object).TypeHandle)
+                //    .Distinct()
+                //    //.Select(p => p.ParameterType.IsGenericParameter ? typeof(object).TypeHandle : p.ParameterType.TypeHandle)
+                //    .ToArray();
+
+                //RuntimeHelpers.PrepareMethod(method.MethodHandle, typeParameters);
+            }
         }
 
         private void CompileAsyncMethod(MethodBase method, AsyncStateMachineAttribute asyncAttribute)

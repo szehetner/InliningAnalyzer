@@ -51,7 +51,12 @@ namespace InliningAnalyzer
         {
             return method == null ||
                    method.IsAbstract ||
-                   method.ContainsGenericParameters;
+                   (method.ContainsGenericParameters /*&& !AreAllGenericParametersReferenceTypes(method)*/);
+        }
+
+        private static bool AreAllGenericParametersReferenceTypes(MethodBase method)
+        {
+            return method.GetParameters().All(p => !p.ParameterType.IsGenericParameter || p.ParameterType.IsClass);
         }
 
         public bool IsIgnored(Type type)
