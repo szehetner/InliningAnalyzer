@@ -29,7 +29,7 @@ namespace InliningAnalyzer
 
             string[] signatureParameters = EtwSignatureParser.GetParameters(signature);
             
-            var overloads = candidates.Select(m => (Method: m, Parameters: m.GetParameters())).Where(t => t.Parameters.Length == signatureParameters.Length).ToArray();
+            var overloads = candidates.Select(m => new { Method = m, Parameters = m.GetParameters()}).Where(t => t.Parameters.Length == signatureParameters.Length).ToArray();
             if (overloads.Length == 0)
                 return null;
 
@@ -57,6 +57,9 @@ namespace InliningAnalyzer
 
         private static string GetTypename(Type type)
         {
+            if (type.IsGenericParameter)
+                return type.Name;
+
             if (!type.IsGenericType)
             {
                 if (type.FullName.Contains("+"))
@@ -67,7 +70,8 @@ namespace InliningAnalyzer
 
             var genericParameters = type.GetGenericArguments();
 
-            return type.Namespace + "." + type.Name + "[" + string.Join(",", genericParameters.Select(p => GetTypename(p))) + "]";
+            return type.Namespace + "." + type.Name + "[" +
+                   string.Join(",", genericParameters.Select(p => GetTypename(p))) + "]";
         }
     }
 }

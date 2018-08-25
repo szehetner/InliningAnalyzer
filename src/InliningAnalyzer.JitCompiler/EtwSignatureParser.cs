@@ -26,12 +26,12 @@ namespace InliningAnalyzer
             int currentIndex = startIndex;
             while (true)
             {
-                (string parameter, int paramEndIndex) = GetNextParameter(input, currentIndex, endIndex);
-                if (parameter == null)
+                var parameterToken = GetNextParameter(input, currentIndex, endIndex);
+                if (parameterToken.Name == null)
                     break;
 
-                parameters.Add(parameter);
-                currentIndex = paramEndIndex + 1;
+                parameters.Add(parameterToken.Name);
+                currentIndex = parameterToken.EndIndex + 1;
             }
 
             return parameters.ToArray();
@@ -41,10 +41,10 @@ namespace InliningAnalyzer
         private const char END = ')';
         private const char GENERIC_START = '<';
         private const char GENERIC_END = '>';
-        private static (string parameter, int endIndex) GetNextParameter(string input, int startIndex, int endIndex)
+        private static ParameterToken GetNextParameter(string input, int startIndex, int endIndex)
         {
             if (startIndex >= endIndex)
-                return (null, endIndex);
+                return new ParameterToken(null, endIndex);
 
             int i = startIndex;
             while (i <= endIndex && input[i] != PARAM_SEPERATOR && input[i] != END)
@@ -55,15 +55,15 @@ namespace InliningAnalyzer
                     string[] parameters = ParseParameterList(input, i + 1, genericEndIndex - 1);
 
                     string genericParam = ParseTypename(input.Substring(startIndex, i-startIndex)) + "[" + string.Join(",", parameters) + "]";
-                    return (genericParam, genericEndIndex + 1);
+                    return new ParameterToken(genericParam, genericEndIndex + 1);
                 }
 
                 i++;
             }
             if (i == startIndex)
-                return (null, i);
+                return new ParameterToken(null, i);
 
-            return (ParseTypename(input.Substring(startIndex, i - startIndex)), i);
+            return new ParameterToken(ParseTypename(input.Substring(startIndex, i - startIndex)), i);
         }
 
         private static int FindMatchingGenericEnd(string input, int startIndex, int endIndex)
@@ -135,6 +135,18 @@ namespace InliningAnalyzer
             }
 
             return null;
+        }
+    }
+
+    internal struct ParameterToken
+    {
+        public string Name { get; }
+        public int EndIndex { get; }
+
+        public ParameterToken(string name, int endIndex)
+        {
+            Name = name;
+            EndIndex = endIndex;
         }
     }
 }
