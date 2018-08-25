@@ -11,6 +11,7 @@ using VsExtension.Shell;
 using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio.LanguageServices;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
 using VsExtension.Shell.Runner;
 using Task = System.Threading.Tasks.Task;
 
@@ -283,7 +284,7 @@ namespace VsExtension
 
         private static bool IsNewProjectFormat(Project vsProject)
         {
-            return vsProject.Kind == "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}";
+            return vsProject is IVsBrowseObjectContext;
         }
         
         private TargetPlatform DetermineTargetPlatform(IProjectPropertyProvider propertyProvider)
