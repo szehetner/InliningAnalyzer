@@ -79,9 +79,21 @@ namespace Tests.Model
             RunMappingTest("Tests.Model.Samples.OutParameters.cs");
         }
 
+        [TestMethod]
+        public void TestRefReturnMethods()
+        {
+            RunMappingTest("Tests.Model.Samples.RefReturnMethods.cs");
+        }
+
         private void RunMappingTest(string resourceFileName)
         {
-            var analyzerResult = RoslynCompiler.Run(resourceFileName);
+            RunMappingTest(resourceFileName, Platform.X86);
+            RunMappingTest(resourceFileName, Platform.X64);
+        }
+
+        private void RunMappingTest(string resourceFileName, Platform platform)
+        {
+            var analyzerResult = RoslynCompiler.Run(resourceFileName, platform);
 
             AnalyzerModel analyzerModel = new AnalyzerModel() { CallGraph = analyzerResult.CallGraph };
             CodeModel codeModel = new CodeModel() { AnalyzerModel = analyzerModel };
@@ -102,6 +114,7 @@ namespace Tests.Model
                 var method = codeModel.GetMethodCall(cache, node.Span);
                 if (method == null)
                 {
+                    Console.WriteLine("Platform " + platform);
                     Console.WriteLine("No mapped Method found for " + node.ToString());
                     Console.WriteLine("Events:\r\n");
                     foreach (var e in analyzerResult.CallGraph.EventDetails)

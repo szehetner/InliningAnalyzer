@@ -18,10 +18,16 @@ namespace Tests.Model
         [TestMethod]
         public void ResolvedSignaturesMatchEtwSignatures()
         {
+            ResolvedSignaturesMatchEtwSignatures(Platform.X64);
+            ResolvedSignaturesMatchEtwSignatures(Platform.X86);
+        }
+
+        public void ResolvedSignaturesMatchEtwSignatures(Platform platform)
+        {
             string source = GetSampleSource();
 
             var model = RoslynCompiler.GetSemanticModel(source);
-            var analyzerResult = RoslynCompiler.Run("Tests.Model.SignatureResolverSamples.cs");
+            var analyzerResult = RoslynCompiler.Run("Tests.Model.SignatureResolverSamples.cs", platform);
 
             var jitType = analyzerResult.CallGraph.GetJitType("Tests.Model.SignatureResolverSamples");
             var innerType = analyzerResult.CallGraph.GetJitType("Tests.Model.SignatureResolverSamples+InnerClass");

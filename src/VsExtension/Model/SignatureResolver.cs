@@ -27,6 +27,13 @@ namespace VsExtension.Model
                 builder.Append("instance ");
 
             AppendTypeName(builder, returnType);
+            if (symbol is IMethodSymbol methodSymbol)
+            {
+                if (methodSymbol.RefKind == RefKind.Ref)
+                {
+                    builder.Append("&");
+                }
+            }
 
             builder.Append("  (");
             for (int i = 0; i < parameters.Length; i++)

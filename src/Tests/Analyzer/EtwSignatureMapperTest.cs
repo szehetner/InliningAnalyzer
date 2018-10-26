@@ -4,6 +4,7 @@ using Tests.Model;
 using System.Reflection;
 using InliningAnalyzer;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace Tests.Analyzer
 {
@@ -14,7 +15,7 @@ namespace Tests.Analyzer
 
         public EtwSignatureMapperTest()
         {
-            var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.Overloads.cs");
+            var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.Overloads.cs", Platform.X86);
             var assembly = Assembly.LoadFrom(assemblyFile);
             _overloadType = assembly.GetType("Tests.Model.Samples.Overloads");
         }

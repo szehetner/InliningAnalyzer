@@ -51,6 +51,9 @@ namespace Tests.Model
 
         public object this[string name] => "";
 
+        private int i;
+        public ref int RefReturnMethod() { return ref i; }
+
         private class InnerClass
         {
             public void InnerMethod() { }

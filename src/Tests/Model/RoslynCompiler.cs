@@ -18,12 +18,12 @@ namespace Tests.Model
 {
     public class RoslynCompiler
     {
-        public static (SemanticModel SemanticModel, AssemblyCallGraph CallGraph) Run(string resourceFileName)
+        public static (SemanticModel SemanticModel, AssemblyCallGraph CallGraph) Run(string resourceFileName, Platform platform)
         {
             string source = GetEmbeddedResource(resourceFileName);
 
-            var tree = CSharpSyntaxTree.ParseText(source);
-            CSharpCompilation compilation = CreateCSharpCompilation(tree);
+            var tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp7_3));
+            CSharpCompilation compilation = CreateCSharpCompilation(tree, platform);
 
             var tempFileName = Path.GetTempFileName();
             try
@@ -32,7 +32,8 @@ namespace Tests.Model
 
                 using (var etwCollector = new EtwCollector(true))
                 {
-                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, null, new TestJitPathResolver());
+                    var targetPlatform = platform == Platform.X64 ? TargetPlatform.X64 : TargetPlatform.X86;
+                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(targetPlatform, TargetRuntime.NetFramework), null, null, new TestJitPathResolver());
                     
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;
@@ -57,11 +58,11 @@ namespace Tests.Model
             }
         }
 
-        public static string CreateAssembly(string resourceFileName)
+        public static string CreateAssembly(string resourceFileName, Platform platform = Platform.X64)
         {
             string source = GetEmbeddedResource(resourceFileName);
-            var tree = CSharpSyntaxTree.ParseText(source);
-            CSharpCompilation compilation = CreateCSharpCompilation(tree);
+            var tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp7_3));
+            CSharpCompilation compilation = CreateCSharpCompilation(tree, platform);
 
             var tempFileName = Path.GetTempFileName();
             CreateAssembly(compilation, tempFileName);
@@ -69,13 +70,13 @@ namespace Tests.Model
         }
 
         private static int _assemblyIndex = 1;
-        private static CSharpCompilation CreateCSharpCompilation(SyntaxTree tree)
+        private static CSharpCompilation CreateCSharpCompilation(SyntaxTree tree, Platform platform)
         {
             var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
             var systemData = MetadataReference.CreateFromFile(typeof(IDataReader).Assembly.Location);
             var compilation = CSharpCompilation.Create("UnitTestCompilation" + _assemblyIndex++,
                 syntaxTrees: new[] { tree }, references: new[] { mscorlib, systemData },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, optimizationLevel: OptimizationLevel.Release));
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true, optimizationLevel: OptimizationLevel.Release, platform: platform));
             return compilation;
         }
 
