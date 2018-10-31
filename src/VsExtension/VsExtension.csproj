@@ -79,17 +79,43 @@
     <Compile Include="Shell\Runner\JitRunner.cs" />
     <Compile Include="Shell\StatusBarLogger.cs" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <!-- unpublished debug assemblies -->
+    <Content Include="..\JitHost.Core.x86\bin\Debug\**">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
+      <Link>JitHosts\NetCore\</Link>
+    </Content>
+    <Content Include="..\JitHost.Core.x64\bin\Debug\**">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
+      <Link>JitHosts\NetCore\</Link>
+    </Content>
+    <Content Include="..\JitHost.Core.x64\bin\Debug\*.*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
+      <Link>JitHosts\NetCore\</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <!-- published release assemblies -->
+    <Content Include="..\JitHost.Core.x64\bin\Release\netcoreapp2.1\publish\*.*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
+      <Link>JitHosts\NetCore\</Link>
+    </Content>
+    <Content Include="..\JitHost.Core.x86\bin\Release\netcoreapp2.1\publish\*.*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
+      <Link>JitHosts\NetCore\</Link>
+    </Content>
+    <Content Include="..\JitHost.Core.x64\bin\Release\netcoreapp2.1\publish\runtimes\win\lib\netstandard2.0\*.*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>JitHosts\NetCore\runtimes\win\lib\netstandard2.0</VSIXSubPath>
+      <Link>JitHosts\NetCore\runtimes\win\lib\netstandard2.0\</Link>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
-    <Content Include="..\JitHost.Core.x86\bin\$(Configuration)\**">
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
-      <Link>JitHosts\NetCore\</Link>
-    </Content>
-    <Content Include="..\JitHost.Core.x64\bin\$(Configuration)\**">
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <VSIXSubPath>JitHosts\NetCore</VSIXSubPath>
-      <Link>JitHosts\NetCore\</Link>
-    </Content>
     <Content Include="..\JitHost.x64\bin\$(Configuration)\*.*">
       <IncludeInVSIX>true</IncludeInVSIX>
       <VSIXSubPath>JitHosts\NetFramework</VSIXSubPath>
@@ -447,4 +473,14 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="ValidateVsixParts" DependsOnTargets="$(ValidateVsixPartsDependsOn)">
+    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+      <VSIXSourceItem Include="..\JitHost.Core.x64\bin\Release\netcoreapp2.1\publish\System.ServiceModel.dll">
+        <VSIXSubPath>JitHosts\NetCore\</VSIXSubPath>
+        <Link>JitHosts\NetCore\</Link>
+      </VSIXSourceItem>
+    </ItemGroup>
+    <ValidateVsixParts Condition="'$(BypassVsixValidation)' != 'true'" Manifest="$(IntermediateVsixManifest)" Files="@(VSIXSourceItem)">
+    </ValidateVsixParts>
+  </Target>
 </Project>

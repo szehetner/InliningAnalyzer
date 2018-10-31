@@ -50,7 +50,7 @@ namespace InliningAnalyzer
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                WorkingDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _pathResolver.GetPath(_jitTarget.Runtime))
             };
             Process = Process.Start(startInfo);
         }
@@ -60,8 +60,8 @@ namespace InliningAnalyzer
             if (_jitTarget.Runtime == TargetRuntime.NetCore)
             {
                 string jitHostDll = _jitTarget.Platform == TargetPlatform.X64
-                    ? Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.Core.x64.dll")
-                    : Path.Combine(_pathResolver.GetPath(_jitTarget.Runtime), "JitHost.Core.x86.dll");
+                    ? "JitHost.Core.x64.dll"
+                    : "JitHost.Core.x86.dll";
 
                 return jitHostDll + " " + BuildRawArguments();
             }
