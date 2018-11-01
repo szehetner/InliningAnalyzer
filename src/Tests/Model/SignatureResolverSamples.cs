@@ -53,7 +53,8 @@ namespace Tests.Model
 
         private int i;
         public ref int RefReturnMethod() { return ref i; }
-
+        public ref int RefMethod(ref bool input) { return ref i; }
+                
         private class InnerClass
         {
             public void InnerMethod() { }
