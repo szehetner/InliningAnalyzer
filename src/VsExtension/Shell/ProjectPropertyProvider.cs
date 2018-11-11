@@ -9,8 +9,10 @@ namespace VsExtension.Shell
         bool IsOptimized { get; }
         bool Prefer32Bit { get; }
         string PlatformTarget { get; }
+        string ProjectPath { get; }
         string OutputPath { get; }
-        string OutputFilename { get; }
+        string GetOutputFilename(string publishPath);
         TargetRuntime TargetRuntime { get; }
+        string TargetFramework { get; }
     }
 }

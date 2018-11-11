@@ -11,15 +11,14 @@ namespace VsExtension.Shell
     public class CommonProjectPropertyProvider : IProjectPropertyProvider
     {
         private readonly Project _project;
-        private readonly TargetRuntime _preferredRuntime;
+        private readonly IOptionsProvider _optionsProvider;
         private string _outputPath;
         private string _assemblyName;
-        private string _targetFramework;
-        
-        public CommonProjectPropertyProvider(Project project, TargetRuntime preferredRuntime)
+
+        public CommonProjectPropertyProvider(Project project, IOptionsProvider optionsProvider)
         {
             _project = project;
-            _preferredRuntime = preferredRuntime;
+            _optionsProvider = optionsProvider;
         }
 
         public async Task LoadProperties()
@@ -40,22 +39,29 @@ namespace VsExtension.Shell
             string targetFrameworks = await properties.GetEvaluatedPropertyValueAsync("TargetFrameworks");
 
             List<string> frameworks = string.IsNullOrEmpty(targetFrameworks) ? new List<string> {targetFramework} : targetFrameworks.Split(';').ToList();
-            _targetFramework = DetermineTargetFramework(frameworks);
+            TargetFramework = DetermineTargetFramework(frameworks);
         }
 
         private string DetermineTargetFramework(List<string> targetFrameworks)
         {
             if (targetFrameworks.Count == 1)
             {
+                // only one targetFramework in project file
                 return targetFrameworks[0];
             }
 
-            string preferredTarget = _preferredRuntime == TargetRuntime.NetCore ? "netcore" : "net4";
-            string fallbackTarget = _preferredRuntime == TargetRuntime.NetCore ? "net4" : "netcore";
+            // check if preferred framework from options dialog is in project file
+            var configured = targetFrameworks.FirstOrDefault(t => t.StartsWith(_optionsProvider.PreferredTargetFramework));
+            if (configured != null)
+                return configured;
 
-            var preferred = targetFrameworks.FirstOrDefault(t => t.StartsWith(preferredTarget));
-            if (preferred != null)
-                return preferred;
+            // derive preferred framework from preferred runtime
+            string runtimePreferredTarget = _optionsProvider.PreferredRuntime == TargetRuntime.NetCore ? "netcore" : "net4";
+            string fallbackTarget = _optionsProvider.PreferredRuntime == TargetRuntime.NetCore ? "net4" : "netcore";
+
+            var runtimePreferred = targetFrameworks.FirstOrDefault(t => t.StartsWith(runtimePreferredTarget));
+            if (runtimePreferred != null)
+                return runtimePreferred;
 
             var netStandardTarget = targetFrameworks.FirstOrDefault(t => t.StartsWith("netstandard"));
             if (netStandardTarget != null)
@@ -71,28 +77,31 @@ namespace VsExtension.Shell
         public bool IsOptimized { get; private set; }
         public bool Prefer32Bit { get; private set; }
         public string PlatformTarget { get; private set; }
-        public string OutputPath => Path.Combine(_project.Properties.Item("FullPath").Value.ToString(), _outputPath);
+        public string ProjectPath => _project.Properties.Item("FullPath").Value.ToString();
+        public string OutputPath => Path.Combine(ProjectPath, _outputPath);
+        public string TargetFramework { get; set; }
 
-        public string OutputFilename
+        public string GetOutputFilename(string publishPath)
         {
-            get
-            {
-                string assemblyName = _assemblyName + ".dll";
-                if (OutputPath.Trim('\\').EndsWith(_targetFramework))
-                    return Path.Combine(OutputPath, assemblyName);
+            string assemblyName = _assemblyName + ".dll";
 
-                return Path.Combine(OutputPath, "..", _targetFramework, assemblyName);
-            }
+            if (publishPath != null)
+                return Path.Combine(publishPath, assemblyName);
+
+            if (OutputPath.Trim('\\').EndsWith(TargetFramework))
+                return Path.Combine(OutputPath, assemblyName);
+
+            return Path.Combine(OutputPath, "..", TargetFramework, assemblyName);
         }
         
         public TargetRuntime TargetRuntime
         {
             get
             {
-                if (_targetFramework.StartsWith("netstandard"))
-                    return _preferredRuntime;
+                if (TargetFramework.StartsWith("netstandard"))
+                    return _optionsProvider.PreferredRuntime;
 
-                if (_targetFramework.StartsWith("netcore"))
+                if (TargetFramework.StartsWith("netcore"))
                     return TargetRuntime.NetCore;
 
                 return TargetRuntime.NetFramework;

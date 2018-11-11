@@ -70,6 +70,7 @@
     <Compile Include="QuickInfo\QuickInfoControllerProvider.cs" />
     <Compile Include="QuickInfo\QuickInfoSource.cs" />
     <Compile Include="QuickInfo\QuickInfoSourceProvider.cs" />
+    <Compile Include="Shell\IOptionsProvider.cs" />
     <Compile Include="Shell\LegacyProjectPropertyProvider.cs" />
     <Compile Include="Shell\InliningAnalyzerOptionsPage.cs">
       <SubType>Component</SubType>
@@ -77,6 +78,7 @@
     <Compile Include="Shell\OutputWindowLogger.cs" />
     <Compile Include="Shell\ProjectPropertyProvider.cs" />
     <Compile Include="Shell\Runner\JitRunner.cs" />
+    <Compile Include="Shell\Runner\ProjectPublisher.cs" />
     <Compile Include="Shell\StatusBarLogger.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">

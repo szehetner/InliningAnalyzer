@@ -24,16 +24,15 @@ namespace VsExtension.Shell
         public bool IsOptimized => (bool)_activeConfiguration.Properties.Item("Optimize").Value;
         public bool Prefer32Bit => (bool)_activeConfiguration.Properties.Item("Prefer32bit").Value;
         public string PlatformTarget => _activeConfiguration.Properties.Item("PlatformTarget").Value.ToString();
-        public string OutputPath => Path.Combine(_project.Properties.Item("FullPath").Value.ToString(), _activeConfiguration.Properties.Item("OutputPath").Value.ToString());
+        public string ProjectPath => _project.Properties.Item("FullPath").Value.ToString();
+        public string OutputPath => Path.Combine(ProjectPath, _activeConfiguration.Properties.Item("OutputPath").Value.ToString());
         public TargetRuntime TargetRuntime => TargetRuntime.NetFramework;
+        public string TargetFramework => _activeConfiguration.Properties.Item("TargetFramework").Value.ToString();
 
-        public string OutputFilename
+        public string GetOutputFilename(string publishPath)
         {
-            get
-            {
-                string outputFileName = _project.Properties.Item("OutputFileName").Value.ToString();
-                return Path.Combine(OutputPath, outputFileName);
-            }
+            string outputFileName = _project.Properties.Item("OutputFileName").Value.ToString();
+            return Path.Combine(publishPath ?? OutputPath, outputFileName);
         }
     }
 }

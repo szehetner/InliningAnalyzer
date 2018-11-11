@@ -96,7 +96,7 @@ namespace InliningAnalyzer
         {
             if (_jitTarget.Runtime == TargetRuntime.NetCore)
             {
-                var dotnetExecutable = GetDotnetExecutablePath();
+                var dotnetExecutable = GetDotnetExecutablePath(_jitTarget);
                 CheckDotnetExeVersion(dotnetExecutable);
                 return dotnetExecutable;
             }
@@ -149,10 +149,10 @@ namespace InliningAnalyzer
                 throw new JitCompilerException(".Net Core 2.1+ is required to run the Inlining Analyzer on .NetCore projects.\r\nCurrent .Net Core Version: " + versionString);
         }
 
-        private string GetDotnetExecutablePath()
+        public static string GetDotnetExecutablePath(JitTarget jitTarget)
         {
             string dotnetExecutable;
-            if (_jitTarget.Platform == TargetPlatform.X64)
+            if (jitTarget.Platform == TargetPlatform.X64)
                 dotnetExecutable = Environment.ExpandEnvironmentVariables(@"%ProgramW6432%\dotnet\dotnet.exe");
             else
                 dotnetExecutable = Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\dotnet\dotnet.exe");

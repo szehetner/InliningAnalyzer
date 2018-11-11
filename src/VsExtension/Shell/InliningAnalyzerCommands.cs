@@ -207,7 +207,7 @@ namespace VsExtension
             if (project == null)
                 return;
 
-            var propertyProvider = CreateProjectPropertyProvider(project, PreferredRuntime);
+            var propertyProvider = CreateProjectPropertyProvider(project, OptionsProvider);
             await propertyProvider.LoadProperties();
 
             try
@@ -226,7 +226,8 @@ namespace VsExtension
             _outputLogger.ActivateWindow();
             _outputLogger.WriteText("Building " + project.Name + "...");
 
-            dte2.Solution.SolutionBuild.BuildProject(project.ConfigurationManager.ActiveConfiguration.ConfigurationName, project.UniqueName, true);
+            string configurationName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
+            dte2.Solution.SolutionBuild.BuildProject(configurationName, project.UniqueName, true);
             if (dte2.Solution.SolutionBuild.LastBuildInfo != 0)
             {
                 _outputLogger.WriteText("Build failed.");
@@ -235,12 +236,23 @@ namespace VsExtension
 
             _outputLogger.ActivateWindow();
 
-            string assemblyFile = GetAssemblyPath(propertyProvider);
             JitTarget jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
+
+            string publishPath = null;
+            if (ProjectPublisher.IsPublishingNecessary(propertyProvider))
+            {
+                var publisher = new ProjectPublisher(jitTarget, configurationName, propertyProvider, _outputLogger);
+                if (!publisher.Publish())
+                    return;
+                publishPath = publisher.PublishPath;
+            }
+
+            string assemblyFile = GetAssemblyPath(propertyProvider, publishPath);
 
             _statusBarLogger.SetText("Running Inlining Analyzer on " + project.Name);
             _statusBarLogger.StartProgressAnimation();
 
+            _outputLogger.WriteText("");
             _outputLogger.WriteText("Starting Inlining Analyzer...");
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
@@ -268,16 +280,25 @@ namespace VsExtension
                 _outputLogger.WriteText(ex.ToString());
                 ShowError("Jit Compilation failed with errors. Check the Inlining Analyzer Output Window for details.");
             }
-
+            finally
+            {
+                if (publishPath != null)
+                {
+                    try
+                    {
+                        Directory.Delete(publishPath, true);
+                    }
+                    catch (Exception) { }
+                }
+            }
             _statusBarLogger.StopProgressAnimation();
             _statusBarLogger.Clear();
         }
 
-        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project,
-            TargetRuntime preferredRuntime)
+        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project, IOptionsProvider optionsProvider)
         {
             if (IsNewProjectFormat(project))
-                return new CommonProjectPropertyProvider(project, preferredRuntime);
+                return new CommonProjectPropertyProvider(project, optionsProvider);
 
             return new LegacyProjectPropertyProvider(project);
         }
@@ -309,11 +330,11 @@ namespace VsExtension
             return TargetPlatform.X64;
         }
 
-        private static string GetAssemblyPath(IProjectPropertyProvider propertyProvider)
+        private static string GetAssemblyPath(IProjectPropertyProvider propertyProvider, string publishPath)
         {
             try
             {
-                string outputFilename = propertyProvider.OutputFilename;
+                string outputFilename = propertyProvider.GetOutputFilename(publishPath);
                 
                 if (File.Exists(outputFilename))
                     return outputFilename;
@@ -360,15 +381,15 @@ namespace VsExtension
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
-        private TargetRuntime PreferredRuntime
+        private IOptionsProvider OptionsProvider
         {
             get
             {
-                InliningAnalyzerOptionsPage optionsPage = (InliningAnalyzerOptionsPage) _package.GetDialogPage(typeof(InliningAnalyzerOptionsPage));
-                return optionsPage.PreferredRuntime;
+                InliningAnalyzerOptionsPage optionsPage = (InliningAnalyzerOptionsPage)_package.GetDialogPage(typeof(InliningAnalyzerOptionsPage));
+                return optionsPage;
             }
         }
-
+                       
         private void OpenOptionsCallback(object sender, EventArgs e)
         {
             _package.ShowOptionPage(typeof(InliningAnalyzerOptionsPage));
