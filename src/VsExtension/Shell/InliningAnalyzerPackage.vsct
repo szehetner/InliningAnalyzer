@@ -85,7 +85,13 @@
           <ButtonText>Run Inlining Analyzer on Current Project</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guiInliningAnalyzerPackageCmdSet" id="EnableHighlightingId" priority="0x0101" type="Button">
+      <Button guid="guiInliningAnalyzerPackageCmdSet" id="StartAnalyzerForAssemblyId" priority="0x0101" type="Button">
+        <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" />
+        <Strings>
+          <ButtonText>Run Inlining Analyzer on Assembly File...</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guiInliningAnalyzerPackageCmdSet" id="EnableHighlightingId" priority="0x0102" type="Button">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" />
         <CommandFlag>TextChanges</CommandFlag>
         <CommandFlag>DontCache</CommandFlag>
@@ -95,7 +101,7 @@
         </Strings>
       </Button>
 
-      <Button guid="guiInliningAnalyzerPackageCmdSet" id="OpenOptionsId" priority="0x0102" type="Button">
+      <Button guid="guiInliningAnalyzerPackageCmdSet" id="OpenOptionsId" priority="0x0103" type="Button">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroupOptions" />
         <Icon guid="guidImages" id="bmpOptions" />
         <Strings>
@@ -131,6 +137,7 @@
     <GuidSymbol name="guiInliningAnalyzerPackageCmdSet" value="{cbca2c69-1cc0-4b99-aa32-a621c99552e4}">
       <IDSymbol name="EnableHighlightingId" value="0x0100" />
       <IDSymbol name="StartAnalyzerId" value="0x0101" />
+      <IDSymbol name="StartAnalyzerForAssemblyId" value="0x0103" />
       <IDSymbol name="OpenOptionsId" value="0x0102" />
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="MyMenuGroupOptions" value="0x1023" />

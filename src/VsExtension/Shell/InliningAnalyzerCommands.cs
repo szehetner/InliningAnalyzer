@@ -23,6 +23,7 @@ namespace VsExtension
     internal sealed class InliningAnalyzerCommands
     {
         public const int StartCommandId = 0x0101;
+        public const int StartForAssemblyCommandId = 0x0103;
         public const int ToggleCommandId = 0x0100;
         public const int OpenOptionsCommandId = 0x0102;
         public const int StartForScopeCommandId = 0x0131;
@@ -75,9 +76,14 @@ namespace VsExtension
             if (commandService != null)
             {
                 OleMenuCommand startMenuItem = new OleMenuCommand(StartMenuItemCallback, new CommandID(CommandSet, StartCommandId));
-                startMenuItem.BeforeQueryStatus += OnBeforeQueryStatusStart;
+                startMenuItem.BeforeQueryStatus += OnBeforeQueryStatusProject;
                 startMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(startMenuItem);
+
+                OleMenuCommand startForAssemblyMenuItem = new OleMenuCommand(StartForAssemblyMenuItemCallback, new CommandID(CommandSet, StartForAssemblyCommandId));
+                startMenuItem.BeforeQueryStatus += OnBeforeQueryStatusAssemblyFile;
+                startForAssemblyMenuItem.Enabled = dte2.Solution.IsOpen;
+                commandService.AddCommand(startForAssemblyMenuItem);
 
                 OleMenuCommand menuItem = new OleMenuCommand(ToggleMenuItemCallback, new CommandID(CommandSet, ToggleCommandId));
                 menuItem.BeforeQueryStatus += OnBeforeQueryStatusToggle;
@@ -110,7 +116,7 @@ namespace VsExtension
             myCommand.Text = AnalyzerModel.IsHighlightingEnabled ? "Hide Inlining Analyzer Coloring" : "Show Inlining Analyzer Coloring";
         }
 
-        private void OnBeforeQueryStatusStart(object sender, EventArgs e)
+        private void OnBeforeQueryStatusProject(object sender, EventArgs e)
         {
             var myCommand = sender as OleMenuCommand;
             if (null == myCommand)
@@ -132,6 +138,22 @@ namespace VsExtension
             {
                 myCommand.Text = "Run Inlining Analyzer on Current Project";
             }
+        }
+
+        private void OnBeforeQueryStatusAssemblyFile(object sender, EventArgs e)
+        {
+            var myCommand = sender as OleMenuCommand;
+            if (null == myCommand)
+                return;
+
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (!dte2.Solution.IsOpen)
+            {
+                myCommand.Enabled = false;
+                return;
+            }
+
+            myCommand.Enabled = true;
         }
 
         /// <summary>
@@ -199,7 +221,12 @@ namespace VsExtension
         {
             await RunAnalyzer(null);
         }
-        
+
+        private async void StartForAssemblyMenuItemCallback(object sender, EventArgs e)
+        {
+            await RunAnalyzer(new TargetScope(ScopeType.AssemblyFile, null));
+        }
+
         private async Task RunAnalyzer(TargetScope targetScope)
         {
             var dte2 = (DTE2) Package.GetGlobalService(typeof(SDTE));
@@ -210,44 +237,52 @@ namespace VsExtension
             var propertyProvider = CreateProjectPropertyProvider(project, OptionsProvider);
             await propertyProvider.LoadProperties();
 
-            try
+            _outputLogger.ActivateWindow();
+            string publishPath = null;
+            JitTarget jitTarget;
+            if (targetScope.ScopeType != ScopeType.AssemblyFile)
             {
-                if (!propertyProvider.IsOptimized)
+                try
                 {
-                    ShowError(
-                        "The current build configuration does not have the \"Optimize code\" flag set and is therefore not suitable for analysing the JIT compiler.\r\n\r\nPlease enable the the \"Optimize code\" flag (under Project Properties -> Build) or switch to a non-debug configuration (e.g. 'Release') before running the Inlining Analyzer.");
+                    if (!propertyProvider.IsOptimized)
+                    {
+                        ShowError(
+                            "The current build configuration does not have the \"Optimize code\" flag set and is therefore not suitable for analysing the JIT compiler.\r\n\r\nPlease enable the the \"Optimize code\" flag (under Project Properties -> Build) or switch to a non-debug configuration (e.g. 'Release') before running the Inlining Analyzer.");
+                        return;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            
+                _outputLogger.WriteText("Building " + project.Name + "...");
+
+                string configurationName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
+                dte2.Solution.SolutionBuild.BuildProject(configurationName, project.UniqueName, true);
+                if (dte2.Solution.SolutionBuild.LastBuildInfo != 0)
+                {
+                    _outputLogger.WriteText("Build failed.");
                     return;
                 }
+            
+                _outputLogger.ActivateWindow();
+
+                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
+                
+                if (ProjectPublisher.IsPublishingNecessary(propertyProvider))
+                {
+                    var publisher = new ProjectPublisher(jitTarget, configurationName, propertyProvider, _outputLogger);
+                    if (!publisher.Publish())
+                        return;
+                    publishPath = publisher.PublishPath;
+                }
             }
-            catch (Exception)
+            else
             {
+                // TODO: read target platform from assembly file
+                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), OptionsProvider.PreferredRuntime);
             }
-
-            _outputLogger.ActivateWindow();
-            _outputLogger.WriteText("Building " + project.Name + "...");
-
-            string configurationName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
-            dte2.Solution.SolutionBuild.BuildProject(configurationName, project.UniqueName, true);
-            if (dte2.Solution.SolutionBuild.LastBuildInfo != 0)
-            {
-                _outputLogger.WriteText("Build failed.");
-                return;
-            }
-
-            _outputLogger.ActivateWindow();
-
-            JitTarget jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
-
-            string publishPath = null;
-            if (ProjectPublisher.IsPublishingNecessary(propertyProvider))
-            {
-                var publisher = new ProjectPublisher(jitTarget, configurationName, propertyProvider, _outputLogger);
-                if (!publisher.Publish())
-                    return;
-                publishPath = publisher.PublishPath;
-            }
-
-            string assemblyFile = GetAssemblyPath(propertyProvider, publishPath);
+            string assemblyFile = GetAssemblyPath(propertyProvider, publishPath, targetScope);
 
             _statusBarLogger.SetText("Running Inlining Analyzer on " + project.Name);
             _statusBarLogger.StartProgressAnimation();
@@ -257,7 +292,7 @@ namespace VsExtension
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
             _outputLogger.WriteText("Platform: " + jitTarget.Platform);
-            if (targetScope == null)
+            if (targetScope == null || targetScope.ScopeType == ScopeType.AssemblyFile)
                 _outputLogger.WriteText("Scope: All Types and Methods");
             else
                 _outputLogger.WriteText($"Scope ({targetScope.ScopeType}): {targetScope.Name}");
@@ -330,14 +365,17 @@ namespace VsExtension
             return TargetPlatform.X64;
         }
 
-        private static string GetAssemblyPath(IProjectPropertyProvider propertyProvider, string publishPath)
+        private static string GetAssemblyPath(IProjectPropertyProvider propertyProvider, string publishPath, TargetScope targetScope)
         {
             try
             {
-                string outputFilename = propertyProvider.GetOutputFilename(publishPath);
-                
-                if (File.Exists(outputFilename))
-                    return outputFilename;
+                if (targetScope.ScopeType != ScopeType.AssemblyFile)
+                {
+                    string outputFilename = propertyProvider.GetOutputFilename(publishPath);
+
+                    if (File.Exists(outputFilename))
+                        return outputFilename;
+                }
 
                 return GetUserSelectedAssemblyPath(propertyProvider);
             }

@@ -2,6 +2,7 @@
 {
     public enum ScopeType
     {
+        AssemblyFile,
         Class,
         Method
     }
