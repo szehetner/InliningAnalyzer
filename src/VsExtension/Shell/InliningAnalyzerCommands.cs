@@ -228,7 +228,7 @@ namespace VsExtension
         {
             try
             {
-                await RunAnalyzer(null);
+                await RunAnalyzer(new TargetScope(ScopeType.Project));
             }
             catch (Exception ex)
             {
@@ -240,7 +240,7 @@ namespace VsExtension
         {
             try
             {
-                await RunAnalyzer(new TargetScope(ScopeType.AssemblyFile, null));
+                await RunAnalyzer(new TargetScope(ScopeType.AssemblyFile));
             }
             catch (Exception ex)
             {
@@ -261,7 +261,7 @@ namespace VsExtension
             _outputLogger.ActivateWindow();
             string publishPath = null;
             JitTarget jitTarget;
-            if (targetScope.ScopeType != ScopeType.AssemblyFile)
+            if (targetScope.RequiresBuild)
             {
                 try
                 {
@@ -315,11 +315,7 @@ namespace VsExtension
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
             _outputLogger.WriteText("Platform: " + jitTarget.Platform);
-            if (targetScope == null || targetScope.ScopeType == ScopeType.AssemblyFile)
-                _outputLogger.WriteText("Scope: All Types and Methods");
-            else
-                _outputLogger.WriteText($"Scope ({targetScope.ScopeType}): {targetScope.Name}");
-
+            _outputLogger.WriteText(targetScope.ToString());
             _outputLogger.WriteText("");
 
             try

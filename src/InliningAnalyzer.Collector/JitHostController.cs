@@ -74,7 +74,7 @@ namespace InliningAnalyzer
             if (_methodListFile != null)
                 return "\"" + _assemblyFile + "\" /l:\"" + _methodListFile + "\"";
 
-            if (_targetScope == null || _targetScope.ScopeType == ScopeType.AssemblyFile)
+            if (_targetScope.ScopeType == ScopeType.Project || _targetScope.ScopeType == ScopeType.AssemblyFile)
                 return "\"" + _assemblyFile + "\"";
 
             if (_targetScope.ScopeType == ScopeType.Class)

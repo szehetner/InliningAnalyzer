@@ -39,7 +39,7 @@ namespace VsExtension.Shell.Runner
             if (_recordEventDetails)
                 UnorderedCallGraph = callGraph;
 
-            if (_targetScope != null && _targetScope.ScopeType == ScopeType.Method)
+            if (_targetScope.ScopeType == ScopeType.Method)
                 return callGraph;
 
             var dependencyGraph = DependencyGraphBuilder.BuildFromCallGraph(callGraph);
