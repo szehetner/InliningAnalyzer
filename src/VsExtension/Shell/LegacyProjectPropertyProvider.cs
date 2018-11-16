@@ -27,7 +27,7 @@ namespace VsExtension.Shell
         public string ProjectPath => _project.Properties.Item("FullPath").Value.ToString();
         public string OutputPath => Path.Combine(ProjectPath, _activeConfiguration.Properties.Item("OutputPath").Value.ToString());
         public TargetRuntime TargetRuntime => TargetRuntime.NetFramework;
-        public string TargetFramework => _activeConfiguration.Properties.Item("TargetFramework").Value.ToString();
+        public string TargetFramework => "";
 
         public string GetOutputFilename(string publishPath)
         {

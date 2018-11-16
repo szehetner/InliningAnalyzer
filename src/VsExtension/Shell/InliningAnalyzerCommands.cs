@@ -192,39 +192,60 @@ namespace VsExtension
         
         private async void StartForScopeMenuItemCallback(object sender, EventArgs e)
         {
-            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
-            if (project == null)
-                return;
-
-            var selection = (TextSelection)dte2.ActiveDocument.Selection;
-            var filename = dte2.ActiveDocument.FullName;
-            var documentId = Workspace.CurrentSolution.GetDocumentIdsWithFilePath(filename);
-            if (documentId.IsEmpty)
-                return;
-
-            var document = Workspace.CurrentSolution.GetDocument(documentId[0]);
-            var semanticModel = await document.GetSemanticModelAsync();
-            var syntaxTree = await document.GetSyntaxTreeAsync();
-
-            TargetScope targetScope = TargetScopeResolver.GetTargetScope(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
-            if (targetScope == null)
+            try
             {
-                ShowError("Could not determine selected Scope (Method or Class).");
-                return;
-            }
+                var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+                var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
+                if (project == null)
+                    return;
 
-            await RunAnalyzer(targetScope);
+                var selection = (TextSelection)dte2.ActiveDocument.Selection;
+                var filename = dte2.ActiveDocument.FullName;
+                var documentId = Workspace.CurrentSolution.GetDocumentIdsWithFilePath(filename);
+                if (documentId.IsEmpty)
+                    return;
+
+                var document = Workspace.CurrentSolution.GetDocument(documentId[0]);
+                var semanticModel = await document.GetSemanticModelAsync();
+                var syntaxTree = await document.GetSyntaxTreeAsync();
+
+                TargetScope targetScope = TargetScopeResolver.GetTargetScope(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
+                if (targetScope == null)
+                {
+                    ShowError("Could not determine selected Scope (Method or Class).");
+                    return;
+                }
+
+                await RunAnalyzer(targetScope);
+            }
+            catch(Exception ex)
+            {
+                ShowError(ex.Message);
+            }
         }
         
         private async void StartMenuItemCallback(object sender, EventArgs e)
         {
-            await RunAnalyzer(null);
+            try
+            {
+                await RunAnalyzer(null);
+            }
+            catch (Exception ex)
+            {
+                ShowError(ex.Message);
+            }
         }
 
         private async void StartForAssemblyMenuItemCallback(object sender, EventArgs e)
         {
-            await RunAnalyzer(new TargetScope(ScopeType.AssemblyFile, null));
+            try
+            {
+                await RunAnalyzer(new TargetScope(ScopeType.AssemblyFile, null));
+            }
+            catch (Exception ex)
+            {
+                ShowError(ex.Message);
+            }
         }
 
         private async Task RunAnalyzer(TargetScope targetScope)
@@ -289,6 +310,8 @@ namespace VsExtension
 
             _outputLogger.WriteText("");
             _outputLogger.WriteText("Starting Inlining Analyzer...");
+            if (!string.IsNullOrEmpty(propertyProvider.TargetFramework))
+                _outputLogger.WriteText("TargetFramework: " + propertyProvider.TargetFramework);
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
             _outputLogger.WriteText("Platform: " + jitTarget.Platform);

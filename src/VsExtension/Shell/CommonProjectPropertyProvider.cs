@@ -51,7 +51,7 @@ namespace VsExtension.Shell
             }
 
             // check if preferred framework from options dialog is in project file
-            var configured = targetFrameworks.FirstOrDefault(t => t.StartsWith(_optionsProvider.PreferredTargetFramework));
+            var configured = targetFrameworks.FirstOrDefault(t => t.StartsWith(_optionsProvider.PreferredTargetFramework ?? ""));
             if (configured != null)
                 return configured;
 

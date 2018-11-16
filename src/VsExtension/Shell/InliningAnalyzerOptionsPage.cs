@@ -14,7 +14,6 @@ namespace VsExtension.Shell
         [Category("Inlining Analyzer")]
         [DisplayName("Preferred TargetFramework")]
         [Description("The output assembly for this target framework is used for projects with multiple target frameworks. If this conflicts with PreferredRuntime, this setting takes preference.")]
-        [DefaultValue("netstandard2.0")]
-        public string PreferredTargetFramework { get; set; }
+        public string PreferredTargetFramework { get; set; } = "netstandard2.0";
     }
 }
