@@ -85,12 +85,16 @@
           <ButtonText>Run Inlining Analyzer on Current Project</ButtonText>
         </Strings>
       </Button>
+      
       <Button guid="guiInliningAnalyzerPackageCmdSet" id="StartAnalyzerForAssemblyId" priority="0x0101" type="Button">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" />
+        <CommandFlag>DontCache</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Run Inlining Analyzer on Assembly File...</ButtonText>
         </Strings>
       </Button>
+      
       <Button guid="guiInliningAnalyzerPackageCmdSet" id="EnableHighlightingId" priority="0x0102" type="Button">
         <Parent guid="guiInliningAnalyzerPackageCmdSet" id="MyMenuGroup" />
         <CommandFlag>TextChanges</CommandFlag>
@@ -112,6 +116,8 @@
       <Button guid="guiInliningAnalyzerContextMenuCmdSet" id="StartAnalyzerContextId" priority="0x0100" type="Button">
         <Parent guid="guiInliningAnalyzerContextMenuCmdSet" id="TopLevelGroupContext" />
         <Icon guid="guidImages" id="bmpRun" />
+        <CommandFlag>DontCache</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Run Inlining Analyzer on Current Scope</ButtonText>
         </Strings>

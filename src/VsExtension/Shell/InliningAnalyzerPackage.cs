@@ -12,16 +12,17 @@ using Microsoft.Win32;
 using System.ComponentModel.Composition;
 using VsExtension.Model;
 using VsExtension.Shell;
+using System.Threading;
 
 namespace VsExtension
 {
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(InliningAnalyzerPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideOptionPage(typeof(InliningAnalyzerOptionsPage), "Inlining Analyzer", "General", 0, 0, true)]
-    public sealed class InliningAnalyzerPackage : Package
+    public sealed class InliningAnalyzerPackage : AsyncPackage
     {
         /// <summary>
         /// EnableHighlightingPackage GUID string.
@@ -41,10 +42,10 @@ namespace VsExtension
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            InliningAnalyzerCommands.Initialize(this);
-            base.Initialize();
+            await InliningAnalyzerCommands.InitializeAsync(this);
+            await base.InitializeAsync(cancellationToken, progress);
         }
 
         #endregion

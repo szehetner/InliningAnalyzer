@@ -37,7 +37,8 @@ namespace VsExtension
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package _package;
+        private readonly AsyncPackage _package;
+        private IServiceProvider _serviceProvider;
 
         private OutputWindowLogger _outputLogger;
         private StatusBarLogger _statusBarLogger;
@@ -53,26 +54,32 @@ namespace VsExtension
 
 #pragma warning restore CS0649
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InliningAnalyzerCommands"/> class.
-        /// Adds our command handlers for menu (commands must exist in the command table file)
-        /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        private InliningAnalyzerCommands(Package package)
+        private InliningAnalyzerCommands(AsyncPackage package)
         {
             if (package == null)
                 throw new ArgumentNullException("package");
 
+            _package = package;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InliningAnalyzerCommands"/> class.
+        /// Adds our command handlers for menu (commands must exist in the command table file)
+        /// </summary>
+        private async Task InitializeAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            var sp = new ServiceProvider(dte2 as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
-            var container = sp.GetService(typeof(Microsoft.VisualStudio.ComponentModelHost.SComponentModel)) as Microsoft.VisualStudio.ComponentModelHost.IComponentModel;
+            _serviceProvider = new ServiceProvider(dte2 as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
+
+            var container = await _package.GetServiceAsync(typeof(Microsoft.VisualStudio.ComponentModelHost.SComponentModel)) as Microsoft.VisualStudio.ComponentModelHost.IComponentModel;
             container.DefaultCompositionService.SatisfyImportsOnce(this);
             
-            _package = package;
-            _outputLogger = new OutputWindowLogger(package);
-            _statusBarLogger = new StatusBarLogger(package);
+            _outputLogger = new OutputWindowLogger(_package);
+            _statusBarLogger = new StatusBarLogger(_package);
 
-            OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            OleMenuCommandService commandService = await _package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
                 OleMenuCommand startMenuItem = new OleMenuCommand(StartMenuItemCallback, new CommandID(CommandSet, StartCommandId));
@@ -81,7 +88,7 @@ namespace VsExtension
                 commandService.AddCommand(startMenuItem);
 
                 OleMenuCommand startForAssemblyMenuItem = new OleMenuCommand(StartForAssemblyMenuItemCallback, new CommandID(CommandSet, StartForAssemblyCommandId));
-                startMenuItem.BeforeQueryStatus += OnBeforeQueryStatusAssemblyFile;
+                startForAssemblyMenuItem.BeforeQueryStatus += OnBeforeQueryStatusEnabled;
                 startForAssemblyMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(startForAssemblyMenuItem);
 
@@ -94,17 +101,19 @@ namespace VsExtension
                 commandService.AddCommand(optionsMenuItem);
                 
                 OleMenuCommand contextMenuItem = new OleMenuCommand(StartForScopeMenuItemCallback, new CommandID(CommandSetContextMenu, StartForScopeCommandId));
+                contextMenuItem.BeforeQueryStatus += OnBeforeQueryStatusEnabled;
                 contextMenuItem.Enabled = dte2.Solution.IsOpen;
                 commandService.AddCommand(contextMenuItem);
             }
         }
 
-        private void OnBeforeQueryStatusToggle(object sender, EventArgs e)
+        private async void OnBeforeQueryStatusToggle(object sender, EventArgs e)
         {
             var myCommand = sender as OleMenuCommand;
             if (null == myCommand)
                 return;
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (!dte2.Solution.IsOpen)
             {
@@ -116,12 +125,13 @@ namespace VsExtension
             myCommand.Text = AnalyzerModel.IsHighlightingEnabled ? "Hide Inlining Analyzer Coloring" : "Show Inlining Analyzer Coloring";
         }
 
-        private void OnBeforeQueryStatusProject(object sender, EventArgs e)
+        private async void OnBeforeQueryStatusProject(object sender, EventArgs e)
         {
             var myCommand = sender as OleMenuCommand;
             if (null == myCommand)
                 return;
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (!dte2.Solution.IsOpen)
             {
@@ -140,12 +150,13 @@ namespace VsExtension
             }
         }
 
-        private void OnBeforeQueryStatusAssemblyFile(object sender, EventArgs e)
+        private async void OnBeforeQueryStatusEnabled(object sender, EventArgs e)
         {
             var myCommand = sender as OleMenuCommand;
             if (null == myCommand)
                 return;
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (!dte2.Solution.IsOpen)
             {
@@ -164,25 +175,15 @@ namespace VsExtension
             get;
             private set;
         }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private IServiceProvider ServiceProvider
-        {
-            get
-            {
-                return this._package;
-            }
-        }
-
+        
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(Package package)
+        public static async Task InitializeAsync(AsyncPackage package)
         {
             Instance = new InliningAnalyzerCommands(package);
+            await Instance.InitializeAsync();
         }
         
         private void ToggleMenuItemCallback(object sender, EventArgs e)
@@ -194,6 +195,8 @@ namespace VsExtension
         {
             try
             {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
                 var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
                 if (project == null)
@@ -212,7 +215,7 @@ namespace VsExtension
                 TargetScope targetScope = TargetScopeResolver.GetTargetScope(semanticModel, syntaxTree, selection.CurrentLine, selection.CurrentColumn);
                 if (targetScope == null)
                 {
-                    ShowError("Could not determine selected Scope (Method or Class).");
+                    await ShowError("Could not determine selected Scope (Method or Class).");
                     return;
                 }
 
@@ -220,7 +223,7 @@ namespace VsExtension
             }
             catch(Exception ex)
             {
-                ShowError(ex.Message);
+                await ShowError(ex.Message);
             }
         }
         
@@ -232,7 +235,7 @@ namespace VsExtension
             }
             catch (Exception ex)
             {
-                ShowError(ex.Message);
+                await ShowError(ex.Message);
             }
         }
 
@@ -244,12 +247,14 @@ namespace VsExtension
             }
             catch (Exception ex)
             {
-                ShowError(ex.Message);
+                await ShowError(ex.Message);
             }
         }
 
         private async Task RunAnalyzer(TargetScope targetScope)
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var dte2 = (DTE2) Package.GetGlobalService(typeof(SDTE));
             var project = dte2.ActiveDocument?.ProjectItem?.ContainingProject;
             if (project == null)
@@ -267,7 +272,7 @@ namespace VsExtension
                 {
                     if (!propertyProvider.IsOptimized)
                     {
-                        ShowError(
+                        await ShowError(
                             "The current build configuration does not have the \"Optimize code\" flag set and is therefore not suitable for analysing the JIT compiler.\r\n\r\nPlease enable the the \"Optimize code\" flag (under Project Properties -> Build) or switch to a non-debug configuration (e.g. 'Release') before running the Inlining Analyzer.");
                         return;
                     }
@@ -304,6 +309,8 @@ namespace VsExtension
                 jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), OptionsProvider.PreferredRuntime);
             }
             string assemblyFile = GetAssemblyPath(propertyProvider, publishPath, targetScope);
+            if (assemblyFile == null)
+                return;
 
             _statusBarLogger.SetText("Running Inlining Analyzer on " + project.Name);
             _statusBarLogger.StartProgressAnimation();
@@ -327,12 +334,12 @@ namespace VsExtension
             }
             catch (JitCompilerException jitException)
             {
-                ShowError(jitException.Message);
+                await ShowError(jitException.Message);
             }
             catch (Exception ex)
             {
                 _outputLogger.WriteText(ex.ToString());
-                ShowError("Jit Compilation failed with errors. Check the Inlining Analyzer Output Window for details.");
+                await ShowError("Jit Compilation failed with errors. Check the Inlining Analyzer Output Window for details.");
             }
             finally
             {
@@ -425,12 +432,14 @@ namespace VsExtension
             return dialog.FileName;
         }
 
-        private void ShowError(string message)
+        private async Task ShowError(string message)
         {
             string title = "Inlining Analyzer";
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             VsShellUtilities.ShowMessageBox(
-                ServiceProvider,
+                _serviceProvider,
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_CRITICAL,
@@ -447,8 +456,10 @@ namespace VsExtension
             }
         }
                        
-        private void OpenOptionsCallback(object sender, EventArgs e)
+        private async void OpenOptionsCallback(object sender, EventArgs e)
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             _package.ShowOptionPage(typeof(InliningAnalyzerOptionsPage));
         }
     }
