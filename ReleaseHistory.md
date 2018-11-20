@@ -1,3 +1,9 @@
+### Version 0.7.4, 2018/11/16:
+
+* bugfix for resolving dependencies of .Net Standard and .NET Core projects ([#11](https://github.com/szehetner/InliningAnalyzer/issues/11))
+* bugfix for methods with ref parameters ([#10](https://github.com/szehetner/InliningAnalyzer/issues/10))
+* support for manually selecting the assembly to analyze
+
 ### Version 0.7.3, 2018/10/31:
 
 * bugfix for missing assembly error with .NET Core projects ([#8](https://github.com/szehetner/InliningAnalyzer/issues/8))
