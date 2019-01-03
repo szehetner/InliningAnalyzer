@@ -31,6 +31,7 @@ namespace VsExtension.Shell
             IsOptimized = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("Optimize"));
             Prefer32Bit = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("Prefer32bit"));
             PlatformTarget = await properties.GetEvaluatedPropertyValueAsync("PlatformTarget");
+            IsWebSdkProject = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("UsingMicrosoftNETSdkWeb"));
 
             _outputPath = await properties.GetEvaluatedPropertyValueAsync("OutputPath");
             _assemblyName = await properties.GetEvaluatedPropertyValueAsync("AssemblyName");
@@ -80,6 +81,7 @@ namespace VsExtension.Shell
         public string ProjectPath => _project.Properties.Item("FullPath").Value.ToString();
         public string OutputPath => Path.Combine(ProjectPath, _outputPath);
         public string TargetFramework { get; set; }
+        public bool IsWebSdkProject { get; set; }
 
         public string GetOutputFilename(string publishPath)
         {

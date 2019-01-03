@@ -14,5 +14,6 @@ namespace VsExtension.Shell
         string GetOutputFilename(string publishPath);
         TargetRuntime TargetRuntime { get; }
         string TargetFramework { get; }
+        bool IsWebSdkProject { get; }
     }
 }

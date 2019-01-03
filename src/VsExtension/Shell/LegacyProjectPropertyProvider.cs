@@ -28,6 +28,7 @@ namespace VsExtension.Shell
         public string OutputPath => Path.Combine(ProjectPath, _activeConfiguration.Properties.Item("OutputPath").Value.ToString());
         public TargetRuntime TargetRuntime => TargetRuntime.NetFramework;
         public string TargetFramework => "";
+        public bool IsWebSdkProject => false; // not needed
 
         public string GetOutputFilename(string publishPath)
         {

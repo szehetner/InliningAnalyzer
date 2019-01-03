@@ -72,7 +72,23 @@ namespace VsExtension.Shell.Runner
 
         private string BuildArguments()
         {
-            return $"publish --no-build --output \"{PublishPath}\" -f \"{_propertyProvider.TargetFramework}\" -c \"{_configurationName}\"";
+            string arguments = $"publish --output \"{PublishPath}\" -f \"{_propertyProvider.TargetFramework}\" -c \"{_configurationName}\"";
+
+            if (_propertyProvider.IsWebSdkProject)
+            {
+                arguments += " --self-contained";
+
+                if (_jitTarget.Platform == TargetPlatform.X64)
+                    arguments += " --runtime win-x64";
+                else
+                    arguments += " --runtime win-x86";
+            }
+            else
+            {
+                arguments += " --no-build";
+            }
+
+            return arguments;
         }
         
         private string DeterminePublishPath()
