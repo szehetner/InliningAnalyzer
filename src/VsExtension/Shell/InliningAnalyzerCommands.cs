@@ -298,7 +298,7 @@ namespace VsExtension
                 if (ProjectPublisher.IsPublishingNecessary(propertyProvider))
                 {
                     var publisher = new ProjectPublisher(jitTarget, configurationName, propertyProvider, _outputLogger);
-                    if (!publisher.Publish())
+                    if (!await Task.Run(() => publisher.Publish()))
                         return;
                     publishPath = publisher.PublishPath;
                 }
@@ -328,7 +328,7 @@ namespace VsExtension
             try
             {
                 var runner = new JitRunner(assemblyFile, jitTarget, targetScope, _outputLogger, new JitHostPathResolver());
-                AnalyzerModel.CallGraph = runner.Run();
+                AnalyzerModel.CallGraph = await Task.Run(() => runner.Run());
 
                 _outputLogger.WriteText("Finished Inlining Analyzer");
             }
