@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.Composition;
-using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
@@ -15,7 +14,7 @@ namespace VsExtension
         public InlineSucceededMethodFormat()
         {
             DisplayName = "Inlining Analyzer: Inlining Succeeded";
-            this.BackgroundColor = Colors.LightGreen;
+            BackgroundColor = ClassificationColorManager.GetDefaultColors().SucceededColor;
         }
     }
 
@@ -29,7 +28,7 @@ namespace VsExtension
         public InlineFailedMethodFormat()
         {
             DisplayName = "Inlining Analyzer: Inlining Failed";
-            this.BackgroundColor = Colors.LightSalmon;
+            BackgroundColor = ClassificationColorManager.GetDefaultColors().FailedColor;
         }
     }
 }

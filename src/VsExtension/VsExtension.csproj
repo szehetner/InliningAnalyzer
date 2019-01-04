@@ -53,7 +53,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Classifier\ThemeManagement\ClassificationColorManager.cs" />
     <Compile Include="Classifier\ClassifierProvider.cs" />
+    <Compile Include="Classifier\ThemeManagement\ColorDefinition.cs" />
+    <Compile Include="Classifier\ThemeManagement\VisualStudioColorTheme.cs" />
     <Compile Include="Model\TargetScopeResolver.cs" />
     <Compile Include="Shell\CommonProjectPropertyProvider.cs" />
     <Compile Include="Shell\InliningAnalyzerCommands.cs" />
