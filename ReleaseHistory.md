@@ -1,3 +1,10 @@
+### Version 0.7.5, 2018/01/05:
+
+* support for dark color theme ([#12](https://github.com/szehetner/InliningAnalyzer/issues/12))
+* fix for missing assembly errors in Web Application Projects ([#13](https://github.com/szehetner/InliningAnalyzer/issues/13))
+* async extension package loading
+* increase responsiveness by running analyzer and publishing (if applicable) on background thread
+
 ### Version 0.7.4, 2018/11/16:
 
 * bugfix for resolving dependencies of .Net Standard and .NET Core projects ([#11](https://github.com/szehetner/InliningAnalyzer/issues/11))
