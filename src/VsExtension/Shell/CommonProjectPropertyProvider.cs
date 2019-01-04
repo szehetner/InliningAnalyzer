@@ -31,7 +31,8 @@ namespace VsExtension.Shell
             IsOptimized = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("Optimize"));
             Prefer32Bit = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("Prefer32bit"));
             PlatformTarget = await properties.GetEvaluatedPropertyValueAsync("PlatformTarget");
-            IsWebSdkProject = bool.Parse(await properties.GetEvaluatedPropertyValueAsync("UsingMicrosoftNETSdkWeb"));
+            string isWebSdkRaw = await properties.GetEvaluatedPropertyValueAsync("UsingMicrosoftNETSdkWeb");
+            IsWebSdkProject = string.IsNullOrEmpty(isWebSdkRaw) ? false : bool.Parse(isWebSdkRaw);
 
             _outputPath = await properties.GetEvaluatedPropertyValueAsync("OutputPath");
             _assemblyName = await properties.GetEvaluatedPropertyValueAsync("AssemblyName");
