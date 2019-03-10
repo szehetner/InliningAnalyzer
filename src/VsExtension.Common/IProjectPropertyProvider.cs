@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using InliningAnalyzer;
+﻿using InliningAnalyzer;
+using System.Threading.Tasks;
 
-namespace VsExtension.Shell
+namespace VsExtension.Common
 {
     public interface IProjectPropertyProvider
     {

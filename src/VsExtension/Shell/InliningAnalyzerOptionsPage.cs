@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using InliningAnalyzer;
 using Microsoft.VisualStudio.Shell;
+using VsExtension.Common;
 
 namespace VsExtension.Shell
 {

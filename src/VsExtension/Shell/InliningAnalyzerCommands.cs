@@ -11,9 +11,9 @@ using VsExtension.Shell;
 using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio.LanguageServices;
-using Microsoft.VisualStudio.ProjectSystem.Properties;
 using VsExtension.Shell.Runner;
 using Task = System.Threading.Tasks.Task;
+using VsExtension.Common;
 
 namespace VsExtension
 {
@@ -51,6 +51,9 @@ namespace VsExtension
 
         [Import]
         internal VisualStudioWorkspace Workspace;
+
+        [Import]
+        internal ICommonProjectPropertyProviderFactory CommonProjectPropertyProviderFactory;
 
 #pragma warning restore CS0649
 
@@ -356,19 +359,16 @@ namespace VsExtension
             _statusBarLogger.Clear();
         }
 
-        private static IProjectPropertyProvider CreateProjectPropertyProvider(Project project, IOptionsProvider optionsProvider)
+        private IProjectPropertyProvider CreateProjectPropertyProvider(Project project, IOptionsProvider optionsProvider)
         {
-            if (IsNewProjectFormat(project))
-                return new CommonProjectPropertyProvider(project, optionsProvider);
+            if (CommonProjectPropertyProviderFactory.IsNewProjectFormat(project))
+            {
+                return CommonProjectPropertyProviderFactory.Create(project, optionsProvider);
+            }
 
             return new LegacyProjectPropertyProvider(project);
         }
-
-        private static bool IsNewProjectFormat(Project vsProject)
-        {
-            return vsProject is IVsBrowseObjectContext;
-        }
-        
+                
         private TargetPlatform DetermineTargetPlatform(IProjectPropertyProvider propertyProvider)
         {
             try

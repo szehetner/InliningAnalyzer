@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <RootNamespace>VsExtension.Vs2019</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EnvDTE" Version="8.0.2" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="16.0.189-g83e7c53a57">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="16.0.374-pre">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InliningAnalyzer.Collector\InliningAnalyzer.Collector.csproj" />
+    <ProjectReference Include="..\VsExtension.Common\VsExtension.Common.csproj" />
+  </ItemGroup>
+
+</Project>

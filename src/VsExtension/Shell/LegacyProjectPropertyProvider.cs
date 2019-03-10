@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using EnvDTE;
 using InliningAnalyzer;
+using VsExtension.Common;
 
 namespace VsExtension.Shell
 {

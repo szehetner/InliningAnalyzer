@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using EnvDTE;
+using InliningAnalyzer;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using EnvDTE;
-using InliningAnalyzer;
-using Microsoft.VisualStudio.ProjectSystem.Properties;
+using VsExtension.Common;
 
 namespace VsExtension.Shell
 {
@@ -40,7 +41,7 @@ namespace VsExtension.Shell
             string targetFramework = await properties.GetEvaluatedPropertyValueAsync("TargetFramework");
             string targetFrameworks = await properties.GetEvaluatedPropertyValueAsync("TargetFrameworks");
 
-            List<string> frameworks = string.IsNullOrEmpty(targetFrameworks) ? new List<string> {targetFramework} : targetFrameworks.Split(';').ToList();
+            List<string> frameworks = string.IsNullOrEmpty(targetFrameworks) ? new List<string> { targetFramework } : targetFrameworks.Split(';').ToList();
             TargetFramework = DetermineTargetFramework(frameworks);
         }
 
@@ -72,7 +73,7 @@ namespace VsExtension.Shell
             var secondary = targetFrameworks.FirstOrDefault(t => t.StartsWith(fallbackTarget));
             if (secondary != null)
                 return secondary;
-            
+
             throw new JitCompilerException("No compatible TargetFramework could be determined from the project file. At least one of netstandard*, netcore* or net* is required.");
         }
 
@@ -96,7 +97,7 @@ namespace VsExtension.Shell
 
             return Path.Combine(OutputPath, "..", TargetFramework, assemblyName);
         }
-        
+
         public TargetRuntime TargetRuntime
         {
             get
@@ -109,6 +110,10 @@ namespace VsExtension.Shell
 
                 return TargetRuntime.NetFramework;
             }
+        }
+        public static bool IsNewProjectFormat(Project vsProject)
+        {
+            return vsProject is IVsBrowseObjectContext;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using InliningAnalyzer;
 
-namespace VsExtension.Shell
+namespace VsExtension.Common
 {
     public interface IOptionsProvider
     {
