@@ -33,7 +33,7 @@ namespace Tests.Model
                 using (var etwCollector = new EtwCollector(true))
                 {
                     var targetPlatform = platform == Platform.X64 ? TargetPlatform.X64 : TargetPlatform.X86;
-                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(targetPlatform, TargetRuntime.NetFramework), null, null, new TestJitPathResolver());
+                    JitHostController jitController = new JitHostController(tempFileName, new JitTarget(targetPlatform, TargetRuntime.NetFramework), new TargetScope(ScopeType.Project), null, new TestJitPathResolver());
                     
                     jitController.StartProcess();
                     jitController.Process.OutputDataReceived += JitHostOutputDataReceived;

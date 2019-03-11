@@ -15,7 +15,7 @@ namespace Tests.Analyzer
         {
             var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.MethodOrdering.cs");
 
-            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new ConsoleLogger(), new TestJitPathResolver(), true);
+            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), new TargetScope(ScopeType.AssemblyFile), new ConsoleLogger(), new TestJitPathResolver(), true);
             var assemblyCallGraph = runner.Run();
 
             Console.WriteLine("Events:\r\n");
@@ -28,7 +28,7 @@ namespace Tests.Analyzer
         {
             var assemblyFile = RoslynCompiler.CreateAssembly("Tests.Model.Samples.Overloads.cs");
 
-            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new ConsoleLogger(), new TestJitPathResolver(), true);
+            JitRunner runner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), new TargetScope(ScopeType.AssemblyFile), new ConsoleLogger(), new TestJitPathResolver(), true);
             var assemblyCallGraph = runner.Run();
 
             var overloadType = assemblyCallGraph.GetJitType("Tests.Model.Samples.Overloads");

@@ -304,6 +304,10 @@
       <Project>{90be37af-f818-4fb2-a88c-7b57db9101ec}</Project>
       <Name>JitHost.x86</Name>
     </ProjectReference>
+    <ProjectReference Include="..\VsExtension.Common\VsExtension.Common.csproj">
+      <Project>{f25d73a1-3e25-4d0c-ac80-14126850567b}</Project>
+      <Name>VsExtension.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VsExtension\VsExtension.csproj">
       <Project>{dc87e41d-81b3-45c7-aab6-a02d24d48bb5}</Project>
       <Name>VsExtension</Name>
