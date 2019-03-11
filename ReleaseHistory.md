@@ -1,4 +1,8 @@
-### Version 0.7.5, 2018/01/05:
+### Version 0.7.6, 2019/03/11:
+
+* support for Visual Studio 2019 ([#15](https://github.com/szehetner/InliningAnalyzer/issues/15))
+
+### Version 0.7.5, 2019/01/05:
 
 * support for dark color theme ([#12](https://github.com/szehetner/InliningAnalyzer/issues/12))
 * fix for missing assembly errors in Web Application Projects ([#13](https://github.com/szehetner/InliningAnalyzer/issues/13))

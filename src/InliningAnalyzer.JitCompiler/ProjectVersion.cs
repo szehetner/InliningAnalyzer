@@ -2,6 +2,6 @@
 {
     public static class ProjectVersion
     {
-        public const string VersionNumber = "0.7.5.0";
+        public const string VersionNumber = "0.7.6.0";
     }
 }
