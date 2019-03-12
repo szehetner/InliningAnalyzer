@@ -120,8 +120,7 @@ namespace VsExtension
 
                 foreach (var classifiedSpan in classifiedSpans)
                 {
-                    if (_comparer.Compare(classifiedSpan.ClassificationType, "operator") != 0 
-                        && _comparer.Compare(classifiedSpan.ClassificationType, "keyword") != 0
+                    if (_comparer.Compare(classifiedSpan.ClassificationType, "keyword") != 0
                         && _comparer.Compare(classifiedSpan.ClassificationType, "punctuation") != 0)
                         yield return classifiedSpan;
                 }
