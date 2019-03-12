@@ -145,7 +145,7 @@ namespace InliningAnalyzer
                 return;
             }
 
-            if (major < 2 || minor < 1)
+            if (major < 2 || (major == 2 && minor < 1))
                 throw new JitCompilerException(".Net Core 2.1+ is required to run the Inlining Analyzer on .NetCore projects.\r\nCurrent .Net Core Version: " + versionString);
         }
 
