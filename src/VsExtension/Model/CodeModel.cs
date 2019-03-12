@@ -184,6 +184,13 @@ namespace VsExtension.Model
                 var indexerSymbol = GetSymbol(doc, indexer) as IPropertySymbol;
                 return (indexer, indexerSymbol.Name.Replace("this[]", "get_Item"), GetSignature(doc, indexer));
             }
+
+            var operatorContainer = GetContainer<OperatorDeclarationSyntax>(node);
+            if (operatorContainer != null)
+            {
+                var operatorSymbol = GetSymbol(doc, operatorContainer);
+                return (operatorContainer, operatorSymbol.Name, SignatureResolver.BuildSignature((IMethodSymbol)operatorSymbol));
+            }
             return (null, null, null);
         }
 

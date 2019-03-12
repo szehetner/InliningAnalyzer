@@ -85,6 +85,12 @@ namespace Tests.Model
             RunMappingTest("Tests.Model.Samples.RefReturnMethods.cs");
         }
 
+        [TestMethod]
+        public void TestOperators()
+        {
+            RunMappingTest("Tests.Model.Samples.Operators.cs");
+        }
+
         private void RunMappingTest(string resourceFileName)
         {
             RunMappingTest(resourceFileName, Platform.X86);

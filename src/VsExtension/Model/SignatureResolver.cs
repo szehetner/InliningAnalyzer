@@ -81,8 +81,11 @@ namespace VsExtension.Model
             else
             {
                 builder.Append("class ");
-                builder.Append(type.GetFullNamespace());
-                builder.Append(".");
+                if (type.ContainingType == null)
+                {
+                    builder.Append(type.GetFullNamespace());
+                    builder.Append(".");
+                }
                 builder.Append(type.Name);
             }
             if (isPointer)
