@@ -1,3 +1,8 @@
+### Version 0.7.7, 2019/03/13:
+
+* support for operator overloads (highlighting calls to and inside of overloaded operators) ([#17](https://github.com/szehetner/InliningAnalyzer/issues/17))
+* support for .NET Core 3.0
+
 ### Version 0.7.6, 2019/03/11:
 
 * support for Visual Studio 2019 ([#15](https://github.com/szehetner/InliningAnalyzer/issues/15))
