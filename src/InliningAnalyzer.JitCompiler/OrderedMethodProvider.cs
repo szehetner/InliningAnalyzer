@@ -35,25 +35,35 @@ namespace InliningAnalyzer
 
             foreach (var methodItem in _methodList.Methods)
             {
-                if (!types.TryGetValue(methodItem.FullTypeName, out Type type))
-                    continue;
-
-                var candidates = EtwSignatureMapper.GetMethodCandidates(type, methodItem.MethodName);
-                if (candidates.Length == 0)
+                MethodBase method;
+                try
                 {
-                    Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName} could not be found.");
+                    if (!types.TryGetValue(methodItem.FullTypeName, out Type type))
+                        continue;
+
+                    var candidates = EtwSignatureMapper.GetMethodCandidates(type, methodItem.MethodName);
+                    if (candidates.Length == 0)
+                    {
+                        Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName} could not be found.");
+                        continue;
+                    }
+
+                    method = SelectOverload(candidates, methodItem.Signature);
+                    if (method == null)
+                    {
+                        Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName}({methodItem.Signature}) could not be found.");
+                        continue;
+                    }
+
+                    if (UnorderedMethodProvider.IsIgnored(method))
+                        continue;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Method {methodItem.FullTypeName}.{methodItem.MethodName}({methodItem.Signature}) could not be found.");
+                    Console.WriteLine(ex.ToString());
                     continue;
                 }
-
-                var method = SelectOverload(candidates, methodItem.Signature);
-                if (method == null)
-                {
-                    Console.WriteLine($"Method {type.FullName}.{methodItem.MethodName}({methodItem.Signature}) could not be found.");
-                    continue;
-                }
-
-                if (UnorderedMethodProvider.IsIgnored(method))
-                    continue;
 
                 yield return method;
             }

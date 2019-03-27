@@ -62,6 +62,9 @@ namespace InliningAnalyzer
 
             if (!type.IsGenericType)
             {
+                if (type.FullName == null)
+                    return type.Name;
+
                 if (type.FullName.Contains("+"))
                     return type.FullName.Substring(type.FullName.IndexOf("+") + 1);
 
