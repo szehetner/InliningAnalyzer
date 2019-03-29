@@ -1,3 +1,7 @@
+### Version 0.7.8, 2019/03/29:
+
+* fixed exception when analyzing methods with generic parameters ([#18](https://github.com/szehetner/InliningAnalyzer/issues/18))
+
 ### Version 0.7.7, 2019/03/13:
 
 * support for operator overloads (highlighting calls to and inside of overloaded operators) ([#17](https://github.com/szehetner/InliningAnalyzer/issues/17))
