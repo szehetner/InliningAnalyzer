@@ -40,7 +40,7 @@ namespace VsExtension.Model
             {
                 AppendTypeName(builder, parameters[i].Type);
 
-                if (parameters[i].RefKind == RefKind.Out || parameters[i].RefKind == RefKind.Ref)
+                if (parameters[i].RefKind == RefKind.Out || parameters[i].RefKind == RefKind.Ref || parameters[i].RefKind == RefKind.In)
                     builder.Append("&");
 
                 if (i != parameters.Length - 1)

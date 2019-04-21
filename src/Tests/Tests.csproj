@@ -276,6 +276,7 @@
     <EmbeddedResource Include="Model\Samples\OutParameters.cs" />
     <EmbeddedResource Include="Model\Samples\RefReturnMethods.cs" />
     <EmbeddedResource Include="Model\Samples\Operators.cs" />
+    <EmbeddedResource Include="Model\Samples\InMethods.cs" />
     <Compile Include="Model\SignatureResolverTest.cs" />
     <EmbeddedResource Include="Model\SignatureResolverSamples.cs" />
     <Compile Include="Model\MappingTest.cs" />
