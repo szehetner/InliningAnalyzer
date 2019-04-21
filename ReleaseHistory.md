@@ -1,3 +1,7 @@
+### Version 0.7.9, 2019/04/21:
+
+* bugfix for methods with "in" parameters ([#19](https://github.com/szehetner/InliningAnalyzer/issues/19))
+
 ### Version 0.7.8, 2019/03/29:
 
 * fixed exception when analyzing methods with generic parameters ([#18](https://github.com/szehetner/InliningAnalyzer/issues/18))
