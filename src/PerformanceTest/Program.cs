@@ -14,7 +14,7 @@ namespace PerformanceTest
         {
             string assemblyFile = @"";
 
-            JitRunner jitRunner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework), null, new NullLogger(), null);
+            JitRunner jitRunner = new JitRunner(assemblyFile, new JitTarget(TargetPlatform.X64, TargetRuntime.NetFramework, null), null, new NullLogger(), null);
             jitRunner.Run();
         }
     }

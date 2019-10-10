@@ -296,7 +296,7 @@ namespace VsExtension
             
                 _outputLogger.ActivateWindow();
 
-                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime);
+                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), propertyProvider.TargetRuntime, OptionsProvider.NetCoreVersion);
                 
                 if (ProjectPublisher.IsPublishingNecessary(propertyProvider))
                 {
@@ -309,7 +309,7 @@ namespace VsExtension
             else
             {
                 // TODO: read target platform from assembly file
-                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), OptionsProvider.PreferredRuntime);
+                jitTarget = new JitTarget(DetermineTargetPlatform(propertyProvider), OptionsProvider.PreferredRuntime, OptionsProvider.NetCoreVersion);
             }
             string assemblyFile = GetAssemblyPath(propertyProvider, publishPath, targetScope);
             if (assemblyFile == null)
@@ -325,6 +325,8 @@ namespace VsExtension
             _outputLogger.WriteText("Assembly: " + assemblyFile);
             _outputLogger.WriteText("Runtime: " + jitTarget.Runtime);
             _outputLogger.WriteText("Platform: " + jitTarget.Platform);
+            if (jitTarget.Runtime == TargetRuntime.NetCore)
+                _outputLogger.WriteText(".NET Core Version: " + (jitTarget.HasSpecificNetCoreVersion ? jitTarget.NetCoreVersion : "Latest"));
             _outputLogger.WriteText(targetScope.ToString());
             _outputLogger.WriteText("");
 

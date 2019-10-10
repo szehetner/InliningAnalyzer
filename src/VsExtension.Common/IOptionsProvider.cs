@@ -6,5 +6,6 @@ namespace VsExtension.Common
     {
         TargetRuntime PreferredRuntime { get; }
         string PreferredTargetFramework { get; }
+        string NetCoreVersion { get; }
     }
 }

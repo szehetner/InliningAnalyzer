@@ -59,11 +59,15 @@ namespace InliningAnalyzer
         {
             if (_jitTarget.Runtime == TargetRuntime.NetCore)
             {
+                string versionSpecifier = _jitTarget.HasSpecificNetCoreVersion
+                    ? "--fx-version " + _jitTarget.NetCoreVersion + " "
+                    : "--roll-forward LatestMajor ";
+
                 string jitHostDll = _jitTarget.Platform == TargetPlatform.X64
                     ? "JitHost.Core.x64.dll"
                     : "JitHost.Core.x86.dll";
 
-                return jitHostDll + " " + BuildRawArguments();
+                return versionSpecifier + jitHostDll + " " + BuildRawArguments();
             }
 
             return BuildRawArguments();
