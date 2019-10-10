@@ -64,6 +64,8 @@ namespace VsExtension.Model
             if (specialType != null)
             {
                 builder.Append(specialType);
+                if (isPointer)
+                    builder.Append("*");
                 return;
             }
 

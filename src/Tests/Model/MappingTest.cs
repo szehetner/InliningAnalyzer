@@ -97,6 +97,12 @@ namespace Tests.Model
             RunMappingTest("Tests.Model.Samples.InMethods.cs");
         }
 
+        [TestMethod]
+        public void Pointers()
+        {
+            RunMappingTest("Tests.Model.Samples.Pointers.cs");
+        }
+
         private void RunMappingTest(string resourceFileName)
         {
             RunMappingTest(resourceFileName, Platform.X86);

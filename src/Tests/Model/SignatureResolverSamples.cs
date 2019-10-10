@@ -34,6 +34,8 @@ namespace Tests.Model
         public void SingleTimeSpan(TimeSpan test) { }
         public void SingleStruct(CustomStruct test) { }
         public void SingleStructPointer(CustomStruct* test) { }
+        public void SingleIntPointer(int* test) { }
+        public void SingleFloatPointer(float* test) { }
         public void Multiple(int test, string test2, bool test3) { }
         public CustomStruct MultipleWithReturn(CustomStruct test, string test2) { return default(CustomStruct); }
 
