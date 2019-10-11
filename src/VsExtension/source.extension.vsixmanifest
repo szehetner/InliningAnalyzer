@@ -1,29 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="InliningAnalyzer-a4c401b8-a782-441a-8548-e7a44aeb23d1" Version="0.7.9" Language="en-US" Publisher="szehetner" />
-    <DisplayName>Inlining Analyzer</DisplayName>
-    <Description xml:space="preserve">Inlining Analyzer shows if a method call will be inlined by the JIT Compiler. Method calls are highlighted right in the source code and also display the reason for a failed inline as given by the JIT Compiler.</Description>
-    <ReleaseNotes>https://github.com/szehetner/InliningAnalyzer/blob/master/ReleaseHistory.md</ReleaseNotes>
-    <Icon>IconLarge.png</Icon>
-    <PreviewImage>Sample.png</PreviewImage>
-    <Tags>JIT Compiler; Inlining; Inliner; Performance</Tags>
-  </Metadata>
-  <Installation>
-    <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Community"  />
-    <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
-    <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-  </Dependencies>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" DisplayName="Visual Studio core editor" />
-  </Prerequisites>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="VsExtension.2017.dll" TargetVersion="[15.0,16.0)" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="VsExtension.2019.dll" TargetVersion="[16.0,17.0)" />
-  </Assets>
+    <Metadata>
+        <Identity Id="InliningAnalyzer-a4c401b8-a782-441a-8548-e7a44aeb23d1" Version="0.7.10" Language="en-US" Publisher="szehetner" />
+        <DisplayName>Inlining Analyzer</DisplayName>
+        <Description xml:space="preserve">Inlining Analyzer shows if a method call will be inlined by the JIT Compiler. Method calls are highlighted right in the source code and also display the reason for a failed inline as given by the JIT Compiler.</Description>
+        <ReleaseNotes>https://github.com/szehetner/InliningAnalyzer/blob/master/ReleaseHistory.md</ReleaseNotes>
+        <Icon>IconLarge.png</Icon>
+        <PreviewImage>Sample.png</PreviewImage>
+        <Tags>JIT Compiler; Inlining; Inliner; Performance</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Community"  />
+        <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="VsExtension.2017.dll" TargetVersion="[15.0,16.0)" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="VsExtension.2019.dll" TargetVersion="[16.0,17.0)" />
+    </Assets>
 </PackageManifest>

@@ -1,3 +1,8 @@
+### Version 0.7.10, 2019/10/11:
+
+* new option to select .NET Core version, use latest installed by default. ([#21](https://github.com/szehetner/InliningAnalyzer/issues/21))
+* bugfix for methods with pointer parameters
+
 ### Version 0.7.9, 2019/04/21:
 
 * bugfix for methods with "in" parameters ([#19](https://github.com/szehetner/InliningAnalyzer/issues/19))
